@@ -38,7 +38,6 @@ SEED = 6+9+14+14 # FINN
 #                                        Pytorch Setup                                             #
 ####################################################################################################
 
-# python -m torch.distributed.launch --use-env --standalone --nproc_per_node=8 train.py
 # torchrun command sets the env variables RANK, LOCAL_RANK, and WORLD_SIZE
 ddp = int(os.environ.get('RANK', -1)) != -1 # is this a ddp run?
 if ddp:
