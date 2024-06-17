@@ -28,6 +28,8 @@ MIN_LR = MAX_LR * 0.1
 WARMUP_STEPS = 715
 MAX_STEPS = 19073*5 # 19,073 steps is ~1 epoch, if data is 10B tokens and batch size 0.5M tokens
 
+SEED = 6+9+14+14 # FINN
+
 ####################################################################################################
 #                                        Pytorch Setup                                             #
 ####################################################################################################
@@ -59,9 +61,9 @@ else:
 
 device_type = "cuda" if device.startswith("cuda") else "cpu"
 
-torch.manual_seed(1337)
+torch.manual_seed(SEED)
 if torch.cuda.is_available():
-    torch.cuda.manual_seed(1337)
+    torch.cuda.manual_seed(SEED)
 
 torch.set_float32_matmul_precision('high')
 
@@ -255,7 +257,7 @@ def sample():
     tokens = tokens.unsqueeze(0).repeat(num_return_sequences, 1)
     xgen = tokens.to(device)
     sample_rng = torch.Generator(device=device)
-    sample_rng.manual_seed(42 + ddp_rank)
+    sample_rng.manual_seed(SEED+1 + ddp_rank)
     while xgen.size(1) < max_length:
         # forward the model to get the logits
         with torch.no_grad():
