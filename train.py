@@ -147,8 +147,8 @@ grad_accum_steps = TOTAL_BATCH_SIZE // (MINI_BATCH_SIZE * BATCH_SEQ_LENGTH * ddp
 if master_process:
     print(f"total desired batch size: {TOTAL_BATCH_SIZE}")
     print(f"=> calculated gradient accumulation steps: {grad_accum_steps}")
-train_loader = DataLoaderLite(num_mini_batch=MINI_BATCH_SIZE, seq_length=BATCH_SEQ_LENGTH, process_rank=ddp_rank, num_processes=ddp_world_size, split="train")
-val_loader = DataLoaderLite(num_mini_batch=MINI_BATCH_SIZE, seq_length=BATCH_SEQ_LENGTH, process_rank=ddp_rank, num_processes=ddp_world_size, split="val")
+train_loader = DataLoaderLite(process_rank=ddp_rank, num_processes=ddp_world_size, split="train")
+val_loader = DataLoaderLite(process_rank=ddp_rank, num_processes=ddp_world_size, split="val")
 
 # create model
 model = GPT(GPTConfig(vocab_size=50304))
