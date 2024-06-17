@@ -28,12 +28,17 @@ MIN_LR = MAX_LR * 0.1
 WARMUP_STEPS = 715
 MAX_STEPS = 19073*5 # 19,073 steps is ~1 epoch, if data is 10B tokens and batch size 0.5M tokens
 
+# Eval
+EVAL_INTERVAL = 250
+CHECKPOINT_INTERVAL = 500
+
 SEED = 6+9+14+14 # FINN
 
 ####################################################################################################
 #                                        Pytorch Setup                                             #
 ####################################################################################################
 
+# python -m torch.distributed.launch --use-env --standalone --nproc_per_node=8 train.py
 # torchrun command sets the env variables RANK, LOCAL_RANK, and WORLD_SIZE
 ddp = int(os.environ.get('RANK', -1)) != -1 # is this a ddp run?
 if ddp:
@@ -153,9 +158,9 @@ train_loader = DataLoaderLite(process_rank=ddp_rank, num_processes=ddp_world_siz
 val_loader = DataLoaderLite(process_rank=ddp_rank, num_processes=ddp_world_size, split="val")
 
 # create model
-model = GPT(GPTConfig(vocab_size=50304))
+model = GPT(GPTConfig(vocab_size=50304)) # "nice" number
 model.to(device)
-use_compile = False # torch.compile interferes with HellaSwag eval and Generation. TODO fix
+use_compile = True # torch.compile interferes with HellaSwag eval and Generation. TODO fix
 if use_compile:
     model = torch.compile(model)
 if ddp:
@@ -201,7 +206,8 @@ def eval_val_loss():
         print(f"validation loss: {val_loss_accum.item():.4f}")
         with open(log_file, "a") as f:
             f.write(f"{step} val {val_loss_accum.item():.4f}\n")
-        if (step % 5000 == 0 or last_step):
+        if (step % CHECKPOINT_INTERVAL == 0 or last_step):
+            print("checkpoint time!!!")
             # optionally write model checkpoints
             checkpoint_path = os.path.join(log_dir, f"model_{step:05d}.pt")
             checkpoint = {
@@ -294,16 +300,16 @@ for step in range(MAX_STEPS):
     last_step = (step == MAX_STEPS - 1)
 
     # once in a while evaluate our validation loss
-    if step % 250 == 0 or last_step:
+    if step % EVAL_INTERVAL == 0 or last_step:
         eval_val_loss()
 
     # once in a while evaluate hellaswag
-    if (step % 250 == 0 or last_step) and (not use_compile):
-        eval_hella_swag()
+    # if (step % 250 == 0 or last_step) and (not use_compile):
+    #     eval_hella_swag()
 
     # once in a while generate from the model (except step 0, which is noise)
-    if ((step > 0 and step % 250 == 0) or last_step) and (not use_compile):
-        sample()
+    # if ((step > 0 and step % 250 == 0) or last_step) and (not use_compile):
+    #     sample()
 
     # optim step
     model.train()
@@ -336,7 +342,7 @@ for step in range(MAX_STEPS):
     # Stats
     torch.cuda.synchronize() # wait for the GPU to finish work
     dt = time.time() - t0
-    tokens_processed = train_loader.B * train_loader.T * grad_accum_steps * ddp_world_size
+    tokens_processed = MINI_BATCH_SIZE * BATCH_SEQ_LENGTH * grad_accum_steps * ddp_world_size
     tokens_per_sec = tokens_processed / dt
     if master_process:
         print(f"step {step:5d} | loss: {loss_accum.item():.6f} | lr {lr:.4e} | norm: {norm:.4f} | dt: {dt*1000:.2f}ms | tok/sec: {tokens_per_sec:.2f}")

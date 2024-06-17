@@ -1,0 +1,9 @@
+started training ~1:15 a.m.
+
+expected time finished:
+
+1,394,039 (random selection but very uniform - all 1.39 mill) tokens / second
+want: 5 epochs (10b tokens in dataset)
+thus: 35867.002286 seconds or 597.783371 minutes or 9.963056 hours
+
+finish at ~11:13
