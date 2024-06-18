@@ -14,7 +14,7 @@ if torch.cuda.is_available():
 print(f"using device: {device}")
 
 # get model from checkpoint
-checkpoint_path = 'artifacts/model_60000.pt'
+checkpoint_path = 'artifacts/model_70000.pt'
 checkpoint = torch.load(checkpoint_path, map_location=torch.device(device))
 print(f"Loading finn-GPT step {checkpoint['step']}")
 print(f"val loss: {checkpoint['val_loss']}")
@@ -49,7 +49,7 @@ while xgen.size(1) < MAX_LENGTH:
         # gather the corresponding indices
         xcol = torch.gather(topk_indices, -1, ix) # (1, 1)
         new_tok = enc.decode(xcol[0].tolist())
-        print(enc.decode(xcol[0].tolist()), end="")
+        print(enc.decode(xcol[0].tolist()))
         # append to the sequence
         xgen = torch.cat((xgen, xcol), dim=1)
 
