@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import "./ChatBox.css"
 
-const ChatBox = ({ onSendMessage }) => {
+const ChatBox = ({ onSend }) => {
   const [text, setText] = useState('');
 
   const handleSend = () => {
     if (text.trim()) {
-      onSendMessage(text);
+      onSend(text);
       setText('');
     }
   };
