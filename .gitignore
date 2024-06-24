@@ -3,3 +3,4 @@ hellaswag
 __pycache__
 artifacts
 .vscode
+.DS_Store
