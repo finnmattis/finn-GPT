@@ -4,9 +4,10 @@ from model import GPT
 import tiktoken
 from torch.nn import functional as F
 from flask_cors import CORS
+import time
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
+CORS(app)
 
 # Load model and tokenizer once at startup
 enc = tiktoken.get_encoding("gpt2")
@@ -30,52 +31,50 @@ except Exception as e:
 def inference():
     if request.method == 'OPTIONS':
         # Preflight request. Reply successfully:
-        response = app.make_default_options_response()
-    else:
-        if model is None:
-            return jsonify({"error": "Model not loaded. Please check server logs."}), 500
+        return app.make_default_options_response()
 
-        prompt = request.args.get('context', default='', type=str)
-        if not prompt:
-            return jsonify({"error": "The 'context' parameter is required and cannot be empty."}), 400
-        
-        tokens = enc.encode(prompt)
-        tokens = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)
+    if model is None:
+        return jsonify({"error": "Model not loaded. Please check server logs."}), 500
 
-        MAX_LENGTH = 100
+    prompt = request.args.get('context', default='', type=str)
+    if not prompt:
+        return jsonify({"error": "The 'context' parameter is required and cannot be empty."}), 400
+    
+    tokens = enc.encode(prompt)
+    tokens = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)
 
-        def generate_tokens():
-            nonlocal tokens
-            while tokens.size(1) < MAX_LENGTH:
-                try:
-                    with torch.no_grad():
-                        logits, _ = model(tokens)
-                        logits = logits[:, -1, :]
-                        probs = F.softmax(logits, dim=-1)
-                        topk_probs, topk_indices = torch.topk(probs, 50, dim=-1)
-                        ix = torch.multinomial(topk_probs, 1)
-                        xcol = torch.gather(topk_indices, -1, ix)
-                        tokens = torch.cat((tokens, xcol), dim=1)
+    MAX_LENGTH = 100
 
-                        latest_token = xcol.item()
-                        yield f"data: {enc.decode([latest_token])}\n\n"
-                except Exception as e:
-                    print(f"Error during token generation: {e}")
-                    yield f"data: [ERROR]\n\n"
+    def generate_tokens():
+        nonlocal tokens
+        start_time = time.time()
+        while tokens.size(1) < MAX_LENGTH:
+            try:
+                # Check if the client has disconnected (5 seconds timeout)
+                if time.time() - start_time > 5:
+                    yield f"data: [TIMEOUT]\n\n"
                     break
 
-            yield "data: [DONE]\n\n"
+                with torch.no_grad():
+                    logits, _ = model(tokens)
+                    logits = logits[:, -1, :]
+                    probs = F.softmax(logits, dim=-1)
+                    topk_probs, topk_indices = torch.topk(probs, 50, dim=-1)
+                    ix = torch.multinomial(topk_probs, 1)
+                    xcol = torch.gather(topk_indices, -1, ix)
+                    tokens = torch.cat((tokens, xcol), dim=1)
 
-        response = Response(generate_tokens(), content_type='text/event-stream')
+                    latest_token = xcol.item()
+                    yield f"data: {enc.decode([latest_token])}\n\n"
+                    start_time = time.time()  # Reset the timer after each successful token generation
+            except Exception as e:
+                print(f"Error during token generation: {e}")
+                yield f"data: [ERROR]\n\n"
+                break
 
-    # Set CORS headers for the main request
-    headers = {
-        'Access-Control-Allow-Origin': 'http://localhost:5173',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-    }
-    response.headers.extend(headers)
-    return response
+        yield "data: [DONE]\n\n"
+
+    return Response(generate_tokens(), content_type='text/event-stream')
 
 if __name__ == '__main__':
     app.run(debug=True)

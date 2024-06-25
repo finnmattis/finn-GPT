@@ -1,18 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import ChatBox from './ChatBox';
+import "./App.css"
 
 const App = () => {
-  const [prompt, setPrompt] = useState('');
-  const [response, setResponse] = useState('');
+  const [text, setText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const abortControllerRef = useRef(null);
 
-  const fetchStream = async () => {
+  const fetchStream = async (input) => {
     setIsLoading(true);
-    setResponse('');
+    setText(input);
     setError(null);
 
+    // Create a new AbortController for this request
+    abortControllerRef.current = new AbortController();
+
     try {
-      const response = await fetch(`http://127.0.0.1:5000/?context=${encodeURIComponent(prompt)}`);
+      const response = await fetch(`http://127.0.0.1:5000/?context=${encodeURIComponent(input)}`, {
+        signal: abortControllerRef.current.signal
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -37,38 +44,44 @@ const App = () => {
               setError('An error occurred during generation');
               setIsLoading(false);
             } else {
-              setResponse(prev => prev + data);
+              setText(prev => prev + data);
             }
           }
         });
       }
     } catch (err) {
-      setError(`Failed to fetch: ${err.message}`);
+      if (err.name === 'AbortError') {
+        setError('Text generation was stopped.');
+      } else {
+        setError(`Failed to fetch: ${err.message}`);
+      }
       setIsLoading(false);
     }
   };
 
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setIsLoading(false);
+    }
+  };
+
+  const onButton = (input) => {
+    console.log(isLoading)
+    if (isLoading) {
+      handleStop()
+    }
+    else {
+      fetchStream(input)
+    }
+  };
+
   return (
-    <div className="p-4">
-      <input
-        type="text"
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        placeholder="Enter your prompt"
-        className="w-full p-2 mb-4 border rounded"
-      />
-      <button
-        onClick={fetchStream}
-        disabled={isLoading || !prompt}
-        className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
-      >
-        {isLoading ? 'Generating...' : 'Generate'}
-      </button>
-      {error && <p className="text-red-500 mt-4">{error}</p>}
-      <div className="mt-4 p-2 border rounded">
-        <h3 className="font-bold">Response:</h3>
-        <p>{response}</p>
-      </div>
+    <div>
+      {!error && <div className="text-wrapper"><p className="text-gen">{text}</p></div>}
+      {error && <div className="text-wrapper"><p className="text-gen" style={{color: "red"}}>{error}</p></div>}
+      <ChatBox onButton={onButton} isLoading={isLoading}/>
+      {isLoading && <button onClick={handleStop}>Stop Generation</button>}
     </div>
   );
 };
