@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import ChatBox from './ChatBox';
 import "./App.css"
 
@@ -6,14 +6,20 @@ const App = () => {
   const [text, setText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const abortControllerRef = useRef(null);
 
   const fetchStream = async (input) => {
     setIsLoading(true);
     setText(input);
     setError(null);
 
+    // Create a new AbortController for this request
+    abortControllerRef.current = new AbortController();
+
     try {
-      const response = await fetch(`http://127.0.0.1:5000/?context=${encodeURIComponent(input)}`);
+      const response = await fetch(`http://127.0.0.1:5000/?context=${encodeURIComponent(input)}`, {
+        signal: abortControllerRef.current.signal
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -44,8 +50,29 @@ const App = () => {
         });
       }
     } catch (err) {
-      setError(`Failed to fetch: ${err.message}`);
+      if (err.name === 'AbortError') {
+        setError('Text generation was stopped.');
+      } else {
+        setError(`Failed to fetch: ${err.message}`);
+      }
       setIsLoading(false);
+    }
+  };
+
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setIsLoading(false);
+    }
+  };
+
+  const onButton = (input) => {
+    console.log(isLoading)
+    if (isLoading) {
+      handleStop()
+    }
+    else {
+      fetchStream(input)
     }
   };
 
@@ -53,7 +80,8 @@ const App = () => {
     <div>
       {!error && <div className="text-wrapper"><p className="text-gen">{text}</p></div>}
       {error && <div className="text-wrapper"><p className="text-gen" style={{color: "red"}}>{error}</p></div>}
-      <ChatBox onSend={fetchStream} />
+      <ChatBox onButton={onButton} isLoading={isLoading}/>
+      {isLoading && <button onClick={handleStop}>Stop Generation</button>}
     </div>
   );
 };
