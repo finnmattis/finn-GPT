@@ -6,7 +6,7 @@ from torch.nn import functional as F
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
+CORS(app)
 
 # Load model and tokenizer once at startup
 enc = tiktoken.get_encoding("gpt2")
@@ -68,13 +68,6 @@ def inference():
 
         response = Response(generate_tokens(), content_type='text/event-stream')
 
-    # Set CORS headers for the main request
-    headers = {
-        'Access-Control-Allow-Origin': 'http://localhost:5173',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-    }
-    response.headers.extend(headers)
     return response
 
 if __name__ == '__main__':
