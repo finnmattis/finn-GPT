@@ -31,7 +31,7 @@ const ChatBox = ({ onButton, isLoading }) => {
             placeholder="Type a message..."
         />
         <button className="submit-button" onClick={handleSend} style={{backgroundColor: input.length === 0 && !isLoading ? '#676767' : 'white'}}>
-            <img src="/send.png" alt="Send" className="send-icon" />
+            <img src={isLoading ? "/stop.png" : "/send.png"} alt="Send" className="send-icon" />
         </button>
         <p className='disclaimer-text'>FinnGPT can not make mistakes. Don't check important info.</p>
     </div>
