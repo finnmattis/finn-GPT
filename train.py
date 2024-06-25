@@ -10,7 +10,6 @@ from torch.distributed import destroy_process_group, init_process_group
 from torch.nn import functional as F
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-from hellaswag import iterate_examples, render_example
 from model import GPT, GPTConfig
 
 ####################################################################################################

@@ -56,7 +56,6 @@ plt.yscale('log')
 plt.ylim(0.0, 4.0)
 plt.legend()
 plt.title("Loss")
-
 plt.savefig('loss.png')
 
 lowest = 100
@@ -68,19 +67,3 @@ for i, val_loss in enumerate(ys):
 
 print(lowest, i)
 print(min(ys))
-
-# # Panel 2: HellaSwag eval
-# plt.subplot(122)
-# xs, ys = streams_xy["hella"] # HellaSwag eval
-# ys = np.array(ys)
-# plt.plot(xs, ys, label=f"nanogpt ({sz})")
-# # horizontal line at GPT-2 baseline
-# if hella2_baseline:
-#     plt.axhline(y=hella2_baseline, color='r', linestyle='--', label=f"OpenAI GPT-2 ({sz}) checkpoint")
-# if hella3_baseline:
-#     plt.axhline(y=hella3_baseline, color='g', linestyle='--', label=f"OpenAI GPT-3 ({sz}) checkpoint")
-# plt.xlabel("steps")
-# plt.ylabel("accuracy")
-# plt.legend()
-# plt.title("HellaSwag eval")
-# print("Max Hellaswag eval:", max(ys))
