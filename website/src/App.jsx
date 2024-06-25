@@ -50,9 +50,7 @@ const App = () => {
         });
       }
     } catch (err) {
-      if (err.name === 'AbortError') {
-        setError('Text generation was stopped.');
-      } else {
+      if (err.name !== 'AbortError') { // stop button
         setError(`Failed to fetch: ${err.message}`);
       }
       setIsLoading(false);
@@ -81,7 +79,6 @@ const App = () => {
       {!error && <div className="text-wrapper"><p className="text-gen">{text}</p></div>}
       {error && <div className="text-wrapper"><p className="text-gen" style={{color: "red"}}>{error}</p></div>}
       <ChatBox onButton={onButton} isLoading={isLoading}/>
-      {isLoading && <button onClick={handleStop}>Stop Generation</button>}
     </div>
   );
 };
