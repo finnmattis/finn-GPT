@@ -16,7 +16,7 @@ const App = () => {
 
   const fetchStream = async (input) => {
     setIsLoading(true);
-    setCompletions((prev) => [...prev, { type: "text", content: input }]);
+    setCompletions((prev) => [...prev, input]);
     setError(null);
 
     abortControllerRef.current = new AbortController();
@@ -49,7 +49,6 @@ const App = () => {
           if (line.startsWith("data: ")) {
             const data = line.slice(6);
             if (data === "[DONE]") {
-              setCompletions((prev) => [...prev, { type: "separator" }]);
               setIsLoading(false);
             } else if (data === "[ERROR]") {
               setError("An error occurred during generation");
@@ -57,7 +56,7 @@ const App = () => {
             } else {
               setCompletions((prev) => {
                 const newCompletions = [...prev];
-                newCompletions[newCompletions.length - 1].content += data;
+                newCompletions[newCompletions.length - 1] += data;
                 return newCompletions;
               });
             }
@@ -89,16 +88,14 @@ const App = () => {
 
   const renderCompletions = () => {
     return completions.map((item, index) => {
-      if (item.type === "separator") {
-        return (
-          <div key={`separator-${index}`} className="separator">
-            &nbsp;
-          </div>
-        );
-      }
       return (
         <div key={index} className="text-wrapper">
-          <p className="text-gen">{item.content}</p>
+          <p className="text-gen">{item}</p>
+          {index != completions.length - 1 && (
+            <div key={`separator-${index}`} className="separator">
+              &nbsp;
+            </div>
+          )}
         </div>
       );
     });
@@ -122,12 +119,12 @@ const App = () => {
       ) : theme === 1 ? (
         <>
           <Background />
-          {/* <Textbox text={completions} error={error} theme={1} /> */}
+          <Textbox text={renderCompletions()} error={error} theme={1} />
         </>
       ) : (
         <>
           <FireflyEffect />
-          {/* <Textbox text={completions} error={error} theme={2} /> */}
+          <Textbox text={renderCompletions()} error={error} theme={2} />
         </>
       )}
       <ChatBox onButton={onButton} isLoading={isLoading} theme={theme} />

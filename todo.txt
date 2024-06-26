@@ -1,10 +1,11 @@
 base code:
 clean up the repo
 make flask api post not get
+endoftext
 
 website:
 
-seperators between completitions
+errors
 upload effects - magic sparkle, space teleport thing
 theme switching effect - esp b.c. transition to space theme
 magic: fog around textbox
