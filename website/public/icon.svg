@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Body -->
+  <circle cx="50" cy="50" r="40" fill="#e6e6e6" stroke="#2c3e50" stroke-width="3"/>
+  
+  <!-- Eyes -->
+  <circle cx="35" cy="45" r="10" fill="#ffffff" stroke="#2c3e50" stroke-width="3"/>
+  <circle cx="65" cy="45" r="10" fill="#ffffff" stroke="#2c3e50" stroke-width="3"/>
+  <circle cx="35" cy="45" r="5" fill="#2c3e50"/>
+  <circle cx="65" cy="45" r="5" fill="#2c3e50"/>
+  
+  <!-- Mouth -->
+  <path d="M40 65 Q50 70 60 65" fill="none" stroke="#2c3e50" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Ears/Antennas -->
+  <rect x="10" y="40" width="10" height="20" fill="#a9cce3" stroke="#2c3e50" stroke-width="2" rx="2"/>
+  <rect x="80" y="40" width="10" height="20" fill="#a9cce3" stroke="#2c3e50" stroke-width="2" rx="2"/>
+  
+  <!-- Top sensor -->
+  <rect x="40" y="10" width="20" height="10" fill="#a9cce3" stroke="#2c3e50" stroke-width="2" rx="2"/>
+  
+  <!-- Cheek dots -->
+  <circle cx="25" cy="60" r="2" fill="#2c3e50"/>
+  <circle cx="75" cy="60" r="2" fill="#2c3e50"/>
+  
+  <!-- Top dots -->
+  <circle cx="40" cy="25" r="2" fill="#2c3e50"/>
+  <circle cx="60" cy="25" r="2" fill="#2c3e50"/>
+</svg>

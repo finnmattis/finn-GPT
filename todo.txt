@@ -4,10 +4,9 @@ make flask api post not get
 
 website:
 
-laggy transition to space theme
 seperators between completitions
-responseive theme changer
 spaces and compression when sending tokens
 upload effects - magic sparkle, space teleport thing
-theme switching effect
+theme switching effect - esp b.c. transition to space theme
 magic: fog around textbox
+make it responseive
