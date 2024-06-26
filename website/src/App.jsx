@@ -82,10 +82,11 @@ const App = () => {
   //     <ChatBox onButton={onButton} isLoading={isLoading} theme="standard"/>
   //   </div>
   // );
+  // need error for space theme
   return (
     <div>
       <Background />
-      <Textbox text="lorem ipsum "/>
+      <Textbox text={text}/>
       <ChatBox onButton={onButton} isLoading={isLoading} theme="space"/>
     </div>
   )
