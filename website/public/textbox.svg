@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="3125.86 335.63 1556.58 609.26">
+  <defs>
+    <style>
+      .frame-border {
+        fill: none;
+        stroke: #149daf;
+        stroke-width: 4px;
+        stroke-miterlimit: 10;
+      }
+      .frame-accent {
+        fill: #149daf;
+        stroke-width: 0px;
+      }
+      .frame-glass {
+        fill: #149daf;
+        opacity: 0.2;
+      }
+    </style>
+  </defs>
+  <polygon class="frame-glass" points="4682.44 335.63 4682.44 746.67 4484.22 944.89 3191.53 944.89 3191.53 819.63 3125.86 753.97 3125.86 335.63 4682.44 335.63"/>
+  <polygon class="frame-border" points="4682.44 335.63 4682.44 746.67 4484.22 944.89 3191.53 944.89 3191.53 819.63 3125.86 753.97 3125.86 335.63 4682.44 335.63"/>
+  <polygon class="frame-accent" points="4682.44 780.72 4682.44 943.67 4519.49 943.67 4682.44 780.72"/>
+  <rect class="frame-accent" x="3193.08" y="326.28" width="340.37" height="16.29"/>
+  <rect class="frame-accent" x="3309.31" y="935.28" width="441" height="16.71"/>
+  <rect class="frame-accent" x="4676.73" y="583.99" width="11.43" height="118.86"/>
+</svg>
