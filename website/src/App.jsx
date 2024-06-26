@@ -10,14 +10,12 @@ import FireflyEffect from "./Firefly";
 const App = () => {
   const [completions, setCompletions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [theme, setTheme] = useState(0);
   const abortControllerRef = useRef(null);
 
   const fetchStream = async (input) => {
     setIsLoading(true);
-    setCompletions((prev) => [...prev, input]);
-    setError(null);
+    setCompletions((prev) => [...prev, { type: "text", content: input }]);
 
     abortControllerRef.current = new AbortController();
 
@@ -51,12 +49,15 @@ const App = () => {
             if (data === "[DONE]") {
               setIsLoading(false);
             } else if (data === "[ERROR]") {
-              setError("An error occurred during generation");
-              setIsLoading(false);
+              const newCompletions = [...prev];
+              newCompletions[newCompletions.length - 1].type = "error";
+              newCompletions[newCompletions.length - 1].content =
+                "Uh Oh. Failed to fetch response from server.";
+              return newCompletions;
             } else {
               setCompletions((prev) => {
                 const newCompletions = [...prev];
-                newCompletions[newCompletions.length - 1] += data;
+                newCompletions[newCompletions.length - 1].content += data;
                 return newCompletions;
               });
             }
@@ -65,7 +66,13 @@ const App = () => {
       }
     } catch (err) {
       if (err.name !== "AbortError") {
-        setError(`Uh Oh. Failed to fetch response from server.`);
+        setCompletions((prev) => {
+          const newCompletions = [...prev];
+          newCompletions[newCompletions.length - 1].type = "error";
+          newCompletions[newCompletions.length - 1].content =
+            "Uh Oh. Failed to fetch response from server.";
+          return newCompletions;
+        });
       }
       setIsLoading(false);
     }
@@ -90,7 +97,9 @@ const App = () => {
     return completions.map((item, index) => {
       return (
         <div key={index} className="text-wrapper">
-          <p className="text-gen">{item}</p>
+          <p className={`text-gen ${item.type === "error" && "error"}`}>
+            {item.content}
+          </p>
           {index != completions.length - 1 && (
             <div key={`separator-${index}`} className="separator">
               &nbsp;
@@ -119,12 +128,12 @@ const App = () => {
       ) : theme === 1 ? (
         <>
           <Background />
-          <Textbox text={renderCompletions()} error={error} theme={1} />
+          <Textbox text={renderCompletions()} theme={1} />
         </>
       ) : (
         <>
           <FireflyEffect />
-          <Textbox text={renderCompletions()} error={error} theme={2} />
+          <Textbox text={renderCompletions()} theme={2} />
         </>
       )}
       <ChatBox onButton={onButton} isLoading={isLoading} theme={theme} />
