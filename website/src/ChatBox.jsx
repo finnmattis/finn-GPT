@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./ChatBox.css";
+import { SendHorizonal, Square } from "lucide-react";
 
 const MagicalGlyphs = () => {
   const glyphs = [
@@ -86,11 +87,11 @@ const ChatBox = ({ onButton, isLoading, theme = 0 }) => {
           onClick={handleSend}
           disabled={!input.trim() && !isLoading}
         >
-          <img
-            src={isLoading ? "/stop.png" : "/send.png"}
-            alt={isLoading ? "Stop" : "Send"}
-            className="send-icon"
-          />
+          {isLoading ? (
+            <Square color="#1a1a1a" fill="#1a1a1a" />
+          ) : (
+            <SendHorizonal color="#1a1a1a" fill="#1a1a1a" />
+          )}
         </button>
       </div>
       <p className="disclaimer-text">
