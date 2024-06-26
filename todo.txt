@@ -1,0 +1,13 @@
+website:
+
+standardized top text
+errors in space theme
+laggy transition to space theme
+implement magic theme
+seperators between completitions
+
+hosting:
+find where to deploy
+web server
+docker
+domain name
