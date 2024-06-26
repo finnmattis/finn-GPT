@@ -17,7 +17,7 @@ const Textbox = ({ text, error, theme = 2 }) => {
 
   return (
     <div
-      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2"
+      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 overflow-hidden"
       style={{ maxWidth: "50vw", height: "70vh", ...getThemeStyles() }}
     >
       {theme === 1 && (
@@ -54,15 +54,22 @@ const Textbox = ({ text, error, theme = 2 }) => {
         </svg>
       )}
       <div
-        className={`relative z-10 text-center ${
-          theme === 1 ? "p-6 mt-8" : ""
-        } ${error ? "error" : "text-white"}`}
+        className={`relative z-10 overflow-auto scrollbar-hide ${
+          theme === 1 ? "absolute inset-0 m-6" : ""
+        }`}
         style={{
-          fontSize: "22px",
-          lineHeight: "1.5",
+          maxHeight: theme === 1 ? "calc(100% - 5rem)" : "100%",
         }}
       >
-        {error ? error : text}
+        <div
+          className={`text-center ${error ? "error" : "text-white"}`}
+          style={{
+            fontSize: "22px",
+            lineHeight: "1.5",
+          }}
+        >
+          {error ? error : text}
+        </div>
       </div>
     </div>
   );

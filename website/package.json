@@ -16,6 +16,7 @@
     "lucide-react": "^0.396.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "tailwind-scrollbar-hide": "^1.1.7",
     "three": "^0.165.0"
   },
   "devDependencies": {
