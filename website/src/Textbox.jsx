@@ -17,7 +17,7 @@ const Textbox = ({ text, theme = 2 }) => {
 
   return (
     <div
-      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 overflow-hidden"
+      className="z-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 overflow-hidden"
       style={{ maxWidth: "50vw", height: "70vh", ...getThemeStyles() }}
     >
       {theme === 1 && (
@@ -54,7 +54,7 @@ const Textbox = ({ text, theme = 2 }) => {
         </svg>
       )}
       <div
-        className={`relative z-10 overflow-auto scrollbar-hide ${
+        className={`relative overflow-auto scrollbar-hide ${
           theme === 1 ? "absolute inset-0 m-6" : ""
         }`}
         style={{
