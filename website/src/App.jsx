@@ -8,7 +8,7 @@ import MagicText from "./MagicText";
 import FireflyEffect from "./Firefly";
 
 const App = () => {
-  const [text, setText] = useState("");
+  const [completions, setCompletions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [theme, setTheme] = useState(0);
@@ -16,16 +16,14 @@ const App = () => {
 
   const fetchStream = async (input) => {
     setIsLoading(true);
-    setText(input);
+    setCompletions((prev) => [...prev, { type: "text", content: input }]);
     setError(null);
 
     abortControllerRef.current = new AbortController();
 
     try {
       const response = await fetch(
-        `https://finn-gpt-enoprmj2xa-uc.a.run.app//?context=${encodeURIComponent(
-          input
-        )}`,
+        `http://127.0.0.1:5000/?context=${encodeURIComponent(input)}`,
         {
           signal: abortControllerRef.current.signal,
         }
@@ -40,7 +38,9 @@ const App = () => {
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          break;
+        }
 
         const chunk = decoder.decode(value);
         const lines = chunk.split("\n");
@@ -49,12 +49,17 @@ const App = () => {
           if (line.startsWith("data: ")) {
             const data = line.slice(6);
             if (data === "[DONE]") {
+              setCompletions((prev) => [...prev, { type: "separator" }]);
               setIsLoading(false);
             } else if (data === "[ERROR]") {
               setError("An error occurred during generation");
               setIsLoading(false);
             } else {
-              setText((prev) => prev + data);
+              setCompletions((prev) => {
+                const newCompletions = [...prev];
+                newCompletions[newCompletions.length - 1].content += data;
+                return newCompletions;
+              });
             }
           }
         });
@@ -82,6 +87,23 @@ const App = () => {
     }
   };
 
+  const renderCompletions = () => {
+    return completions.map((item, index) => {
+      if (item.type === "separator") {
+        return (
+          <div key={`separator-${index}`} className="separator">
+            &nbsp;
+          </div>
+        );
+      }
+      return (
+        <div key={index} className="text-wrapper">
+          <p className="text-gen">{item.content}</p>
+        </div>
+      );
+    });
+  };
+
   return (
     <div
       className={`app-container ${theme === 2 ? "app-container-magic" : ""}`}
@@ -95,28 +117,17 @@ const App = () => {
       </div>
       {theme === 0 ? (
         <>
-          <div className="content-area">
-            {!error && (
-              <div className="text-wrapper">
-                <p className="text-gen">{text}</p>
-              </div>
-            )}
-            {error && (
-              <div className="text-wrapper">
-                <p className="text-gen error">{error}</p>
-              </div>
-            )}
-          </div>
+          <div className="content-area">{renderCompletions()}</div>
         </>
       ) : theme === 1 ? (
         <>
           <Background />
-          <Textbox text={text} error={error} theme={1} />
+          {/* <Textbox text={completions} error={error} theme={1} /> */}
         </>
       ) : (
         <>
           <FireflyEffect />
-          <Textbox text={text} error={error} theme={2} />
+          {/* <Textbox text={completions} error={error} theme={2} /> */}
         </>
       )}
       <ChatBox onButton={onButton} isLoading={isLoading} theme={theme} />
