@@ -81,9 +81,11 @@ const App = () => {
   return (
     <div className="app-container">
       <ThemeSwitcher theme={theme} setTheme={setTheme} />
+      <h1 className="app-title absolute top-0 w-full text-center mt-5 z-10">
+        {theme === 0 ? "Use" : theme === 1 ? "Explore" : "Witness"} finnGPT
+      </h1>
       {theme === 0 ? (
         <>
-          <h1 className="app-title">Use finnGPT</h1>
           <div className="content-area">
             {!error && (
               <div className="text-wrapper">
@@ -101,9 +103,6 @@ const App = () => {
       ) : (
         <>
           <Background />
-          <h1 className="app-title absolute top-0 left-0 w-full text-center mt-10 z-10">
-            Explore finnGPT
-          </h1>
           <Textbox text={text} />
           <ChatBox onButton={onButton} isLoading={isLoading} theme="space" />
         </>

@@ -1,13 +1,12 @@
 website:
 
-standardized top text
+implement magic theme
 errors in space theme
 laggy transition to space theme
-implement magic theme
 seperators between completitions
 
 hosting:
 find where to deploy
 web server
 docker
-domain name
+domain name: finn-gpt.com
