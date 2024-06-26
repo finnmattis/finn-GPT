@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import ChatBox from './ChatBox';
-import "./App.css"
+import "./App.css";
 
 const App = () => {
   const [text, setText] = useState('');
@@ -13,7 +13,6 @@ const App = () => {
     setText(input);
     setError(null);
 
-    // Create a new AbortController for this request
     abortControllerRef.current = new AbortController();
 
     try {
@@ -50,8 +49,8 @@ const App = () => {
         });
       }
     } catch (err) {
-      if (err.name !== 'AbortError') { // stop button
-        setError(`Failed to fetch: ${err.message}`);
+      if (err.name !== 'AbortError') {
+        setError(`Uh Oh. Failed to fetch response from server`);
       }
       setIsLoading(false);
     }
@@ -65,19 +64,19 @@ const App = () => {
   };
 
   const onButton = (input) => {
-    console.log(isLoading)
     if (isLoading) {
-      handleStop()
-    }
-    else {
-      fetchStream(input)
+      handleStop();
+    } else {
+      fetchStream(input);
     }
   };
 
   return (
-    <div>
-      {!error && <div className="text-wrapper"><p className="text-gen">{text}</p></div>}
-      {error && <div className="text-wrapper"><p className="text-gen" style={{color: "red"}}>{error}</p></div>}
+    <div className="app-container">
+      <div className="content-area">
+        {!error && <div className="text-wrapper"><p className="text-gen">{text}</p></div>}
+        {error && <div className="text-wrapper"><p className="text-gen error">{error}</p></div>}
+      </div>
       <ChatBox onButton={onButton} isLoading={isLoading}/>
     </div>
   );
