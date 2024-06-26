@@ -1,3 +1,6 @@
+base code:
+make flask api post not get
+
 website:
 
 implement magic theme
@@ -7,6 +10,7 @@ seperators between completitions
 responseive theme changer
 change send icon: normal, rocket ship launch, magic wand
 refactor chatbox with numbers - put chatbox outside of the ternary
+spaces and compression when sending tokens
 
 hosting:
 find where to deploy

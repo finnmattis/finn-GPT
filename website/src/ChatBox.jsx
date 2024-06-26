@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import "./ChatBox.css";
 
 const MagicalGlyphs = () => {
@@ -20,7 +20,7 @@ const MagicalGlyphs = () => {
       {glyphs.map((d, i) => (
         <path
           key={i}
-          className="glyph"
+          className="glyph glyph-animate"
           d={d}
           style={{ animationDelay: `${i * 0.2}s` }}
         />
@@ -31,7 +31,6 @@ const MagicalGlyphs = () => {
 
 const ChatBox = ({ onButton, isLoading, theme = 0 }) => {
   const [input, setInput] = useState("");
-  const inputRef = useRef(null);
 
   const handleSend = () => {
     if (input.trim() || isLoading) {
@@ -47,17 +46,6 @@ const ChatBox = ({ onButton, isLoading, theme = 0 }) => {
       handleSend();
     }
   };
-
-  useEffect(() => {
-    if (theme === 2 && inputRef.current) {
-      const glyphs = inputRef.current.querySelectorAll(".glyph");
-      glyphs.forEach((glyph) => {
-        glyph.classList.remove("glyph-animate");
-        void glyph.offsetWidth; // Trigger reflow
-        glyph.classList.add("glyph-animate");
-      });
-    }
-  }, [theme, input]);
 
   const getThemeClass = (baseClass) => {
     const themeClasses = ["", "-space", "-magic"];
@@ -83,7 +71,7 @@ const ChatBox = ({ onButton, isLoading, theme = 0 }) => {
 
   return (
     <div className={chatboxClass}>
-      <div className="input-wrapper" ref={inputRef}>
+      <div className="input-wrapper">
         <input
           className={inputClass}
           type="text"

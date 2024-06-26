@@ -12,7 +12,7 @@ CORS(app)
 # Load model and tokenizer once at startup
 enc = tiktoken.get_encoding("gpt2")
 checkpoint_path = 'artifacts/model_60000.pt'
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
 
 try:
     checkpoint = torch.load(checkpoint_path, map_location=device)
@@ -69,7 +69,7 @@ def inference():
                     start_time = time.time()  # Reset the timer after each successful token generation
             except Exception as e:
                 print(f"Error during token generation: {e}")
-                yield f"data: [ERROR]\n\n"
+                yield f"data: [ERROR]\n\n{e}"
                 break
 
         yield "data: [DONE]\n\n"

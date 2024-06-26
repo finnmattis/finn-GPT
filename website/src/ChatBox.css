@@ -143,17 +143,24 @@
   opacity: 0;
 }
 
-.glyph-animate {
-  animation: glyphAppear 2s ease-out forwards;
-}
-
-@keyframes glyphAppear {
+@keyframes glyphAnimation {
   0% {
-    opacity: 0;
-    stroke-dashoffset: 100;
+    stroke-dashoffset: 1000;
+    opacity: 1;
   }
   100% {
-    opacity: 1;
     stroke-dashoffset: 0;
+    opacity: 0;
   }
+}
+
+.glyph {
+  fill: none;
+  stroke-width: 2;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+}
+
+.glyph-animate {
+  animation: glyphAnimation 3s linear infinite;
 }
