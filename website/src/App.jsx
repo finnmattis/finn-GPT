@@ -1,13 +1,14 @@
-import React, { useState, useRef } from 'react';
-import ChatBox from './ChatBox';
+import React, { useState, useRef } from "react";
+import ChatBox from "./ChatBox";
 import "./App.css";
-import Textbox from './Textbox';
-import Background from "./Background"
+import Textbox from "./Textbox";
+import Background from "./Background";
 
 const App = () => {
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [theme, setTheme] = useState("space");
   const abortControllerRef = useRef(null);
 
   const fetchStream = async (input) => {
@@ -18,10 +19,13 @@ const App = () => {
     abortControllerRef.current = new AbortController();
 
     try {
-      const response = await fetch(`http://127.0.0.1:5000/?context=${encodeURIComponent(input)}`, {
-        signal: abortControllerRef.current.signal
-      });
-      
+      const response = await fetch(
+        `http://127.0.0.1:5000/?context=${encodeURIComponent(input)}`,
+        {
+          signal: abortControllerRef.current.signal,
+        }
+      );
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -32,26 +36,26 @@ const App = () => {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
-        
-        lines.forEach(line => {
-          if (line.startsWith('data: ')) {
+        const lines = chunk.split("\n");
+
+        lines.forEach((line) => {
+          if (line.startsWith("data: ")) {
             const data = line.slice(6);
-            if (data === '[DONE]') {
+            if (data === "[DONE]") {
               setIsLoading(false);
-            } else if (data === '[ERROR]') {
-              setError('An error occurred during generation');
+            } else if (data === "[ERROR]") {
+              setError("An error occurred during generation");
               setIsLoading(false);
             } else {
-              setText(prev => prev + data);
+              setText((prev) => prev + data);
             }
           }
         });
       }
     } catch (err) {
-      if (err.name !== 'AbortError') {
+      if (err.name !== "AbortError") {
         setError(`Uh Oh. Failed to fetch response from server`);
       }
       setIsLoading(false);
@@ -73,22 +77,37 @@ const App = () => {
     }
   };
 
-  // return (
-  //   <div className="app-container">
-  //     <div className="content-area">
-  //       {!error && <div className="text-wrapper"><p className="text-gen">{text}</p></div>}
-  //       {error && <div className="text-wrapper"><p className="text-gen error">{error}</p></div>}
-  //     </div>
-  //     <ChatBox onButton={onButton} isLoading={isLoading} theme="standard"/>
-  //   </div>
-  // );
   return (
-    <div>
-      <Background />
-      <Textbox text="lorem ipsum "/>
-      <ChatBox onButton={onButton} isLoading={isLoading} theme="space"/>
+    <div className="app-container">
+      {theme === "standard" ? (
+        <>
+          <h1 className="app-title">Use finnGPT</h1>
+          <div className="content-area">
+            {!error && (
+              <div className="text-wrapper">
+                <p className="text-gen">{text}</p>
+              </div>
+            )}
+            {error && (
+              <div className="text-wrapper">
+                <p className="text-gen error">{error}</p>
+              </div>
+            )}
+          </div>
+          <ChatBox onButton={onButton} isLoading={isLoading} theme={theme} />
+        </>
+      ) : (
+        <>
+          <Background />
+          <h1 className="app-title absolute top-0 left-0 w-full text-center mt-10 z-10">
+            Explore finnGPT
+          </h1>
+          <Textbox text={text} />
+          <ChatBox onButton={onButton} isLoading={isLoading} theme="space" />
+        </>
+      )}
     </div>
-  )
+  );
 };
 
 export default App;

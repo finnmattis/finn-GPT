@@ -34,17 +34,17 @@
 .text-input-space {
   background-color: transparent;
   border: 2px solid #00ffff;
-  color: #00ffff;
-  box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
-  animation: subtleGlow 3s ease-in-out infinite alternate;
+  color: white;
+  box-shadow: 0 0 7px rgba(0, 255, 255, 0.6);
+  animation: pronouncedGlow 3s ease-in-out infinite alternate;
 }
 
-@keyframes subtleGlow {
+@keyframes pronouncedGlow {
   from {
-    box-shadow: 0 0 2px rgba(0, 255, 255, 0.5), 0 0 4px rgba(0, 255, 255, 0.3);
+    box-shadow: 0 0 4px rgba(0, 255, 255, 0.6), 0 0 8px rgba(0, 255, 255, 0.4);
   }
   to {
-    box-shadow: 0 0 5px rgba(0, 255, 255, 0.5), 0 0 10px rgba(0, 255, 255, 0.3);
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.6), 0 0 16px rgba(0, 255, 255, 0.4);
   }
 }
 
@@ -54,7 +54,7 @@
 }
 
 .text-input-space:focus {
-  box-shadow: 0 0 7px rgba(0, 255, 255, 0.7), 0 0 14px rgba(0, 255, 255, 0.5);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.8), 0 0 20px rgba(0, 255, 255, 0.6);
 }
 
 .submit-button {
@@ -77,7 +77,7 @@
 
 .submit-button-space {
   background-color: #00ffff;
-  box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+  box-shadow: 0 0 7px rgba(0, 255, 255, 0.6);
 }
 
 .submit-button.disabled {

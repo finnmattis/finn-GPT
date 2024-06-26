@@ -3,7 +3,7 @@ import React from 'react';
 const Textbox = ({ text = "Your text here" }) => {
   return (
     <div 
-      className="relative w-1/2 flex flex-col" 
+      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2"
       style={{ maxWidth: '50vw', height: '70vh' }}
     >
       <svg
