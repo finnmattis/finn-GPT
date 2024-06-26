@@ -3,12 +3,13 @@ import ChatBox from "./ChatBox";
 import "./App.css";
 import Textbox from "./Textbox";
 import Background from "./Background";
+import ThemeSwitcher from "./ThemeSwitcher";
 
 const App = () => {
   const [text, setText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [theme, setTheme] = useState("space");
+  const [theme, setTheme] = useState("standard");
   const abortControllerRef = useRef(null);
 
   const fetchStream = async (input) => {
@@ -79,6 +80,7 @@ const App = () => {
 
   return (
     <div className="app-container">
+      <ThemeSwitcher />
       {theme === "standard" ? (
         <>
           <h1 className="app-title">Use finnGPT</h1>
