@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import ChatBox from './ChatBox';
 import "./App.css";
 import Textbox from './Textbox';
+import Background from "./Background"
 
 const App = () => {
   const [text, setText] = useState('');
@@ -72,17 +73,21 @@ const App = () => {
     }
   };
 
+  // return (
+  //   <div className="app-container">
+  //     <div className="content-area">
+  //       {!error && <div className="text-wrapper"><p className="text-gen">{text}</p></div>}
+  //       {error && <div className="text-wrapper"><p className="text-gen error">{error}</p></div>}
+  //     </div>
+  //     <ChatBox onButton={onButton} isLoading={isLoading} theme="standard"/>
+  //   </div>
+  // );
   return (
-    <div className="app-container">
-      <div className="content-area">
-        {!error && <div className="text-wrapper"><p className="text-gen">{text}</p></div>}
-        {error && <div className="text-wrapper"><p className="text-gen error">{error}</p></div>}
-      </div>
-      <ChatBox onButton={onButton} isLoading={isLoading}/>
+    <div>
+      <Background />
+      <Textbox text="lorem ipsum "/>
+      <ChatBox onButton={onButton} isLoading={isLoading} theme="space"/>
     </div>
-  );
-  return (
-    <Textbox text="lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem "/>
   )
 };
 

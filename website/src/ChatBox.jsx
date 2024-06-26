@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import "./ChatBox.css";
 
-const ChatBox = ({ onButton, isLoading }) => {
+const ChatBox = ({ onButton, isLoading, theme = "standard" }) => {
   const [input, setInput] = useState('');
 
   const handleSend = () => {
@@ -19,11 +19,16 @@ const ChatBox = ({ onButton, isLoading }) => {
     }
   };
 
+  const isSpaceTheme = theme === "space";
+  const chatboxClass = isSpaceTheme ? "chatbox chatbox-space" : "chatbox";
+  const inputClass = isSpaceTheme ? "text-input text-input-space" : "text-input";
+  const buttonClass = `submit-button ${(!input.trim() && !isLoading) ? 'disabled' : ''} ${isSpaceTheme ? 'submit-button-space' : ''}`;
+
   return (
-    <div className="chatbox">
+    <div className={chatboxClass}>
       <div className="input-wrapper">
         <input
-          className="text-input"
+          className={inputClass}
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -31,7 +36,7 @@ const ChatBox = ({ onButton, isLoading }) => {
           placeholder="Continue writing..."
         />
         <button 
-          className={`submit-button ${(!input.trim() && !isLoading) ? 'disabled' : ''}`} 
+          className={buttonClass}
           onClick={handleSend}
           disabled={!input.trim() && !isLoading}
         >
