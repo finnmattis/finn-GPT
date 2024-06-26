@@ -3,7 +3,8 @@ make flask api post not get
 
 website:
 
-implement magic theme
+off center h1
+fireflies
 errors in space theme
 laggy transition to space theme
 seperators between completitions

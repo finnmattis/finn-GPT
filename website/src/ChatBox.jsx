@@ -70,6 +70,12 @@ const ChatBox = ({ onButton, isLoading, theme = 0 }) => {
     }
   };
 
+  const buttonContent = isLoading ? (
+    <Square color="#070846" fill="#070846" />
+  ) : (
+    <SendHorizonal color="#070846" fill="#070846" />
+  );
+
   return (
     <div className={chatboxClass}>
       <div className="input-wrapper">
@@ -83,24 +89,18 @@ const ChatBox = ({ onButton, isLoading, theme = 0 }) => {
         />
         {theme === 2 && <MagicalGlyphs />}
         <button
-          className={buttonClass}
+          className={`${buttonClass} ${
+            theme === 2
+              ? "animate-bg-pan bg-gradient-to-r from-purple-500 via-violet-500 to-pink-500 bg-[length:200%]"
+              : ""
+          }`}
           onClick={handleSend}
           disabled={!input.trim() && !isLoading}
         >
-          {isLoading ? (
-            <Square
-              color={theme === 2 ? "#070846" : "#1a1a1a"}
-              fill={theme === 2 ? "#070846" : "#1a1a1a"}
-            />
-          ) : (
-            <SendHorizonal
-              color={theme === 2 ? "#070846" : "#1a1a1a"}
-              fill={theme === 2 ? "#070846" : "#1a1a1a"}
-            />
-          )}
+          {buttonContent}
         </button>
       </div>
-      <p className="disclaimer-text">
+      <p className={`disclaimer-text ${theme === 2 ? "text-transparent" : ""}`}>
         FinnGPT can not make mistakes. Don't bother verifying important
         information.
       </p>
