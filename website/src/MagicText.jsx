@@ -23,41 +23,38 @@ export default function MagicText() {
         setLeft2(Math.floor(Math.random() * 110 - 10));
         setTop2(Math.floor(Math.random() * 110 - 40));
         setAnimation2(true);
-      }, 333);
+      }, 666);
       setTimeout(() => {
         setLeft3(Math.floor(Math.random() * 110 - 10));
         setTop3(Math.floor(Math.random() * 110 - 40));
         setAnimation3(true);
-      }, 666);
-    }, 1000);
+      }, 1333);
+    }, 2000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <p className="mt-10 text-center text-6xl text-white sm:text-3xl">
-      Look up a word in{"   "}
-      <span className="relative inline-block text-purple-500">
-        <FontAwesomeIcon
-          className="absolute h-4 w-4 animate-twinkle"
-          style={{ left: `${left1}%`, top: `${top1}%` }}
-          icon={faStar}
-        />
-        <FontAwesomeIcon
-          data-animate={animation2}
-          className="absolute h-4 w-4 scale-0 data-[animate=true]:animate-twinkle"
-          style={{ left: `${left2}%`, top: `${top2}%` }}
-          icon={faStar}
-        />
-        <FontAwesomeIcon
-          data-animate={animation3}
-          className="absolute h-4 w-4 scale-0 data-[animate=true]:animate-twinkle"
-          style={{ left: `${left3}%`, top: `${top3}%` }}
-          icon={faStar}
-        />
-        <span className="animate-bg-pan bg-gradient-to-r from-purple-500 via-violet-500 to-pink-500 bg-[length:200%] bg-clip-text text-transparent">
-          Whitiker's Words
-        </span>
+    <span className="relative inline-block text-purple-500">
+      <FontAwesomeIcon
+        className="absolute h-4 w-4 animate-twinkle"
+        style={{ left: `${left1}%`, top: `${top1}%` }}
+        icon={faStar}
+      />
+      <FontAwesomeIcon
+        data-animate={animation2}
+        className="absolute h-4 w-4 scale-0 data-[animate=true]:animate-twinkle"
+        style={{ left: `${left2}%`, top: `${top2}%` }}
+        icon={faStar}
+      />
+      <FontAwesomeIcon
+        data-animate={animation3}
+        className="absolute h-4 w-4 scale-0 data-[animate=true]:animate-twinkle"
+        style={{ left: `${left3}%`, top: `${top3}%` }}
+        icon={faStar}
+      />
+      <span className="animate-bg-pan bg-gradient-to-r from-purple-500 via-violet-500 to-pink-500 bg-[length:200%] bg-clip-text text-transparent">
+        finnGPT
       </span>
-    </p>
+    </span>
   );
 }
