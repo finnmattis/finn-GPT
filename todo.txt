@@ -1,15 +1,13 @@
 base code:
+clean up the repo
 make flask api post not get
 
 website:
 
-errors in space/magic theme
 laggy transition to space theme
 seperators between completitions
 responseive theme changer
 spaces and compression when sending tokens
 upload effects - magic sparkle, space teleport thing
-
-magic theme:
-glyphs around textbox
-fog around textbox
+theme switching effect
+magic: fog around textbox

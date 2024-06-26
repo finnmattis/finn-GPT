@@ -1,6 +1,6 @@
 import React from "react";
 
-const Textbox = ({ text = "placeholder", theme = 2 }) => {
+const Textbox = ({ text, error, theme = 2 }) => {
   const getThemeStyles = () => {
     if (theme === 2) {
       return {
@@ -54,15 +54,15 @@ const Textbox = ({ text = "placeholder", theme = 2 }) => {
         </svg>
       )}
       <div
-        className={`relative z-10 text-white text-center ${
+        className={`relative z-10 text-center ${
           theme === 1 ? "p-6 mt-8" : ""
-        }`}
+        } ${error ? "error" : "text-white"}`}
         style={{
           fontSize: "22px",
           lineHeight: "1.5",
         }}
       >
-        {text}
+        {error ? error : text}
       </div>
     </div>
   );
