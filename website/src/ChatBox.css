@@ -13,6 +13,11 @@
   box-shadow: none;
 }
 
+.chatbox-magic {
+  background-color: #1e0a2e;
+  box-shadow: 0 -2px 10px rgba(128, 0, 128, 0.3);
+}
+
 .input-wrapper {
   position: relative;
   max-width: 800px;
@@ -48,6 +53,12 @@
   }
 }
 
+.text-input-magic {
+  background-color: rgba(128, 0, 128, 0.2);
+  border: none;
+  color: #f0f0f0;
+}
+
 .text-input:focus {
   outline: none;
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
@@ -55,6 +66,10 @@
 
 .text-input-space:focus {
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.8), 0 0 20px rgba(0, 255, 255, 0.6);
+}
+
+.text-input-magic:focus {
+  box-shadow: none;
 }
 
 .submit-button {
@@ -80,6 +95,11 @@
   box-shadow: 0 0 7px rgba(0, 255, 255, 0.6);
 }
 
+.submit-button-magic {
+  background-color: #800080;
+  box-shadow: 0 0 7px rgba(128, 0, 128, 0.6);
+}
+
 .submit-button.disabled {
   background-color: #4a4a4a;
   cursor: default;
@@ -87,6 +107,11 @@
 
 .submit-button-space.disabled {
   background-color: #005555;
+  box-shadow: none;
+}
+
+.submit-button-magic.disabled {
+  background-color: #4b0082;
   box-shadow: none;
 }
 
@@ -99,5 +124,36 @@
   margin-top: 10px;
   text-align: center;
   font-size: 12px;
-  color: #9B9B9B;
+  color: #9b9b9b;
+}
+
+.glyph-container {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  pointer-events: none;
+}
+
+.glyph {
+  fill: none;
+  stroke: #c48aff;
+  stroke-width: 2;
+  opacity: 0;
+}
+
+.glyph-animate {
+  animation: glyphAppear 2s ease-out forwards;
+}
+
+@keyframes glyphAppear {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 100;
+  }
+  100% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
 }

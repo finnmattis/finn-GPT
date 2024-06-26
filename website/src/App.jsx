@@ -100,17 +100,16 @@ const App = () => {
               </div>
             )}
           </div>
-          <ChatBox onButton={onButton} isLoading={isLoading} theme={theme} />
         </>
       ) : theme === 1 ? (
         <>
           <Background />
           <Textbox text={text} />
-          <ChatBox onButton={onButton} isLoading={isLoading} theme="space" />
         </>
       ) : (
-        <>{/* <Demo /> */}</>
+        <></>
       )}
+      <ChatBox onButton={onButton} isLoading={isLoading} theme={theme} />
     </div>
   );
 };

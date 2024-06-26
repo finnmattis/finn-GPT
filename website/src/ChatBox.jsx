@@ -1,49 +1,114 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import "./ChatBox.css";
 
-const ChatBox = ({ onButton, isLoading, theme = "standard" }) => {
-  const [input, setInput] = useState('');
+const MagicalGlyphs = () => {
+  const glyphs = [
+    "M0,25 Q25,0 50,25 T100,25",
+    "M0,50 Q50,0 100,50 T200,50",
+    "M0,75 Q75,0 150,75 T300,75",
+    "M25,0 Q0,25 25,50 T25,100",
+    "M50,0 Q0,50 50,100 T50,200",
+    "M75,0 Q0,75 75,150 T75,300",
+  ];
+
+  return (
+    <svg
+      className="glyph-container"
+      viewBox="0 0 300 100"
+      preserveAspectRatio="none"
+    >
+      {glyphs.map((d, i) => (
+        <path
+          key={i}
+          className="glyph"
+          d={d}
+          style={{ animationDelay: `${i * 0.2}s` }}
+        />
+      ))}
+    </svg>
+  );
+};
+
+const ChatBox = ({ onButton, isLoading, theme = 0 }) => {
+  const [input, setInput] = useState("");
+  const inputRef = useRef(null);
 
   const handleSend = () => {
     if (input.trim() || isLoading) {
       onButton(input);
     }
     if (!isLoading) {
-      setInput('');
+      setInput("");
     }
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSend();
     }
   };
 
-  const isSpaceTheme = theme === "space";
-  const chatboxClass = isSpaceTheme ? "chatbox chatbox-space" : "chatbox";
-  const inputClass = isSpaceTheme ? "text-input text-input-space" : "text-input";
-  const buttonClass = `submit-button ${(!input.trim() && !isLoading) ? 'disabled' : ''} ${isSpaceTheme ? 'submit-button-space' : ''}`;
+  useEffect(() => {
+    if (theme === 2 && inputRef.current) {
+      const glyphs = inputRef.current.querySelectorAll(".glyph");
+      glyphs.forEach((glyph) => {
+        glyph.classList.remove("glyph-animate");
+        void glyph.offsetWidth; // Trigger reflow
+        glyph.classList.add("glyph-animate");
+      });
+    }
+  }, [theme, input]);
+
+  const getThemeClass = (baseClass) => {
+    const themeClasses = ["", "-space", "-magic"];
+    return `${baseClass}${themeClasses[theme] || ""}`;
+  };
+
+  const chatboxClass = `chatbox ${getThemeClass("chatbox")}`;
+  const inputClass = `text-input ${getThemeClass("text-input")}`;
+  const buttonClass = `submit-button ${
+    !input.trim() && !isLoading ? "disabled" : ""
+  } ${getThemeClass("submit-button")}`;
+
+  const getPlaceholderText = () => {
+    switch (theme) {
+      case 1:
+        return "Transmit your cosmic message...";
+      case 2:
+        return "Cast your spell...";
+      default:
+        return "Continue writing...";
+    }
+  };
 
   return (
     <div className={chatboxClass}>
-      <div className="input-wrapper">
+      <div className="input-wrapper" ref={inputRef}>
         <input
           className={inputClass}
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyPress}
-          placeholder="Continue writing..."
+          placeholder={getPlaceholderText()}
         />
-        <button 
+        {theme === 2 && <MagicalGlyphs />}
+        <button
           className={buttonClass}
           onClick={handleSend}
           disabled={!input.trim() && !isLoading}
         >
-          <img src={isLoading ? "/stop.png" : "/send.png"} alt={isLoading ? "Stop" : "Send"} className="send-icon" />
+          <img
+            src={isLoading ? "/stop.png" : "/send.png"}
+            alt={isLoading ? "Stop" : "Send"}
+            className="send-icon"
+          />
         </button>
       </div>
-      <p className='disclaimer-text'>FinnGPT can not make mistakes. Don't bother verifying important information.</p>
+      <p className="disclaimer-text">
+        FinnGPT can not make mistakes. Don't bother verifying important
+        information.
+      </p>
     </div>
   );
 };
