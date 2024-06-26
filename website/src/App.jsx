@@ -4,6 +4,7 @@ import "./App.css";
 import Textbox from "./Textbox";
 import Background from "./Background";
 import ThemeSwitcher from "./ThemeSwitcher";
+import MagicText from "./MagicText";
 
 const App = () => {
   const [text, setText] = useState("");
@@ -82,7 +83,8 @@ const App = () => {
     <div className="app-container">
       <ThemeSwitcher theme={theme} setTheme={setTheme} />
       <h1 className="app-title absolute top-0 w-full text-center mt-5 z-10">
-        {theme === 0 ? "Use" : theme === 1 ? "Explore" : "Witness"} finnGPT
+        {theme === 0 ? "Use" : theme === 1 ? "Explore" : "Witness"}{" "}
+        {theme === 2 ? <MagicText /> : "finnGPT"}
       </h1>
       {theme === 0 ? (
         <>
@@ -100,12 +102,14 @@ const App = () => {
           </div>
           <ChatBox onButton={onButton} isLoading={isLoading} theme={theme} />
         </>
-      ) : (
+      ) : theme === 1 ? (
         <>
           <Background />
           <Textbox text={text} />
           <ChatBox onButton={onButton} isLoading={isLoading} theme="space" />
         </>
+      ) : (
+        <>{/* <Demo /> */}</>
       )}
     </div>
   );
