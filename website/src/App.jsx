@@ -9,7 +9,7 @@ const App = () => {
   const [text, setText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [theme, setTheme] = useState("standard");
+  const [theme, setTheme] = useState(0);
   const abortControllerRef = useRef(null);
 
   const fetchStream = async (input) => {
@@ -80,8 +80,8 @@ const App = () => {
 
   return (
     <div className="app-container">
-      <ThemeSwitcher />
-      {theme === "standard" ? (
+      <ThemeSwitcher theme={theme} setTheme={setTheme} />
+      {theme === 0 ? (
         <>
           <h1 className="app-title">Use finnGPT</h1>
           <div className="content-area">
