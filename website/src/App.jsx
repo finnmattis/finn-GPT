@@ -6,6 +6,7 @@ import Background from "./Background";
 import ThemeSwitcher from "./ThemeSwitcher";
 import MagicText from "./MagicText";
 import FireflyEffect from "./Firefly";
+import Fog from "./Fog";
 
 const App = () => {
   const [completions, setCompletions] = useState([]);
@@ -110,6 +111,7 @@ const App = () => {
     });
   };
 
+  // return <Fog />;
   return (
     <div
       className={`app-container ${theme === 2 ? "app-container-magic" : ""}`}
@@ -132,6 +134,7 @@ const App = () => {
         </>
       ) : (
         <>
+          <Fog />
           <FireflyEffect />
           <Textbox text={renderCompletions()} theme={2} />
         </>

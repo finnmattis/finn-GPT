@@ -4,10 +4,7 @@ endoftext
 
 website:
 
-errors
-upload effects - magic sparkle, space teleport thing
 theme switching effect - esp b.c. transition to space theme
-magic: fog around textbox
 make it responseive
 spaces and compression when sending tokens
 
