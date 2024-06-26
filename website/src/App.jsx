@@ -5,6 +5,7 @@ import Textbox from "./Textbox";
 import Background from "./Background";
 import ThemeSwitcher from "./ThemeSwitcher";
 import MagicText from "./MagicText";
+import FireflyEffect from "./Firefly";
 
 const App = () => {
   const [text, setText] = useState("");
@@ -114,6 +115,7 @@ const App = () => {
         </>
       ) : (
         <>
+          <FireflyEffect />
           <Textbox text={text} theme={2} />
         </>
       )}
