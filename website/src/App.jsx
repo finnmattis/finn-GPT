@@ -4,6 +4,7 @@ import "./App.css";
 import Textbox from "./Textbox";
 import Background from "./Background";
 import ThemeSwitcher from "./ThemeSwitcher";
+import Demo from "./MagicText";
 
 const App = () => {
   const [text, setText] = useState("");
@@ -100,11 +101,15 @@ const App = () => {
           </div>
           <ChatBox onButton={onButton} isLoading={isLoading} theme={theme} />
         </>
-      ) : (
+      ) : theme === 1 ? (
         <>
           <Background />
           <Textbox text={text} />
           <ChatBox onButton={onButton} isLoading={isLoading} theme="space" />
+        </>
+      ) : (
+        <>
+          <Demo />
         </>
       )}
     </div>
