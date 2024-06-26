@@ -72,7 +72,7 @@ def inference():
                 yield f"data: [ERROR]\n\n{e}"
                 break
 
-        yield "data: [DONE]\n\n"
+        yield "data: [DONE]"
 
     return Response(generate_tokens(), content_type='text/event-stream')
 
