@@ -88,9 +88,15 @@ const ChatBox = ({ onButton, isLoading, theme = 0 }) => {
           disabled={!input.trim() && !isLoading}
         >
           {isLoading ? (
-            <Square color="#1a1a1a" fill="#1a1a1a" />
+            <Square
+              color={theme === 2 ? "#070846" : "#1a1a1a"}
+              fill={theme === 2 ? "#070846" : "#1a1a1a"}
+            />
           ) : (
-            <SendHorizonal color="#1a1a1a" fill="#1a1a1a" />
+            <SendHorizonal
+              color={theme === 2 ? "#070846" : "#1a1a1a"}
+              fill={theme === 2 ? "#070846" : "#1a1a1a"}
+            />
           )}
         </button>
       </div>

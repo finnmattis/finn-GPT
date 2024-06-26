@@ -82,12 +82,16 @@ const App = () => {
   };
 
   return (
-    <div className="app-container">
+    <div
+      className={`app-container ${theme === 2 ? "app-container-magic" : ""}`}
+    >
       <ThemeSwitcher theme={theme} setTheme={setTheme} />
-      <h1 className="app-title absolute top-0 w-full text-center mt-5 z-10">
-        {theme === 0 ? "Use" : theme === 1 ? "Explore" : "Witness"}{" "}
-        {theme === 2 ? <MagicText /> : "finnGPT"}
-      </h1>
+      <div className="absolute top-0 w-full mt-5 z-10 flex justify-center">
+        <h1 className={`app-title ${theme === 2 ? "app-title-magic" : ""}`}>
+          {theme === 0 ? "Use" : theme === 1 ? "Explore" : "Uncover"}{" "}
+          {theme === 2 ? <MagicText /> : "finnGPT"}
+        </h1>
+      </div>
       {theme === 0 ? (
         <>
           <div className="content-area">
@@ -106,10 +110,12 @@ const App = () => {
       ) : theme === 1 ? (
         <>
           <Background />
-          <Textbox text={text} />
+          <Textbox text={text} theme={1} />
         </>
       ) : (
-        <></>
+        <>
+          <Textbox text={text} theme={2} />
+        </>
       )}
       <ChatBox onButton={onButton} isLoading={isLoading} theme={theme} />
     </div>
