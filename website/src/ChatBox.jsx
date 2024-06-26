@@ -71,9 +71,15 @@ const ChatBox = ({ onButton, isLoading, theme = 0 }) => {
   };
 
   const buttonContent = isLoading ? (
-    <Square color="#070846" fill="#070846" />
+    <Square
+      color={theme === 2 ? "#070846" : "#1a1a1a"}
+      fill={theme === 2 ? "#070846" : "#1a1a1a"}
+    />
   ) : (
-    <SendHorizonal color="#070846" fill="#070846" />
+    <SendHorizonal
+      color={theme === 2 ? "#070846" : "#1a1a1a"}
+      fill={theme === 2 ? "#070846" : "#1a1a1a"}
+    />
   );
 
   return (

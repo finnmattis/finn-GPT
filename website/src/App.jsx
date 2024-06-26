@@ -61,7 +61,7 @@ const App = () => {
       }
     } catch (err) {
       if (err.name !== "AbortError") {
-        setError(`Uh Oh. Failed to fetch response from server`);
+        setError(`Uh Oh. Failed to fetch response from server.`);
       }
       setIsLoading(false);
     }
@@ -111,12 +111,12 @@ const App = () => {
       ) : theme === 1 ? (
         <>
           <Background />
-          <Textbox text={text} theme={1} />
+          <Textbox text={text} error={error} theme={1} />
         </>
       ) : (
         <>
           <FireflyEffect />
-          <Textbox text={text} theme={2} />
+          <Textbox text={text} error={error} theme={2} />
         </>
       )}
       <ChatBox onButton={onButton} isLoading={isLoading} theme={theme} />
