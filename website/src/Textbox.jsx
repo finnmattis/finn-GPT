@@ -1,6 +1,6 @@
 import React from "react";
 
-const Textbox = ({ text, error, theme = 2 }) => {
+const Textbox = ({ text, theme = 2 }) => {
   const getThemeStyles = () => {
     if (theme === 2) {
       return {
@@ -62,13 +62,13 @@ const Textbox = ({ text, error, theme = 2 }) => {
         }}
       >
         <div
-          className={`text-center ${error ? "error" : "text-white"}`}
+          className={`text-center text-white}`}
           style={{
             fontSize: "22px",
             lineHeight: "1.5",
           }}
         >
-          {error ? error : text}
+          {text}
         </div>
       </div>
     </div>
