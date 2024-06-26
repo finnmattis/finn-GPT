@@ -4,9 +4,16 @@ implement magic theme
 errors in space theme
 laggy transition to space theme
 seperators between completitions
+responseive theme changer
+change send icon: normal, rocket ship launch, magic wand
+refactor chatbox with numbers - put chatbox outside of the ternary
 
 hosting:
 find where to deploy
 web server
 docker
 domain name: finn-gpt.com
+
+magic theme:
+glyphs around textbox
+fog around textbox
