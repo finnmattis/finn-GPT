@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import "./ChatBox.css"
+import "./ChatBox.css";
 
 const ChatBox = ({ onButton, isLoading }) => {
   const [input, setInput] = useState('');
@@ -20,22 +20,26 @@ const ChatBox = ({ onButton, isLoading }) => {
   };
 
   return (
-<div className="chatbox">
-    <div className="input-wrapper">
+    <div className="chatbox">
+      <div className="input-wrapper">
         <input
-            className="text-input"
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder="Type a message..."
+          className="text-input"
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyPress}
+          placeholder="Continue writing..."
         />
-        <button className="submit-button" onClick={handleSend} style={{backgroundColor: input.length === 0 && !isLoading ? '#676767' : 'white'}}>
-            <img src={isLoading ? "/stop.png" : "/send.png"} alt="Send" className="send-icon" />
+        <button 
+          className={`submit-button ${(!input.trim() && !isLoading) ? 'disabled' : ''}`} 
+          onClick={handleSend}
+          disabled={!input.trim() && !isLoading}
+        >
+          <img src={isLoading ? "/stop.png" : "/send.png"} alt={isLoading ? "Stop" : "Send"} className="send-icon" />
         </button>
-        <p className='disclaimer-text'>FinnGPT can not make mistakes. Don't check important info.</p>
+      </div>
+      <p className='disclaimer-text'>FinnGPT can not make mistakes. Don't bother verifying important information.</p>
     </div>
-</div>
   );
 };
 
