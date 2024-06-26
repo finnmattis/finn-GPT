@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import ChatBox from './ChatBox';
 import "./App.css";
+import Textbox from './Textbox';
 
 const App = () => {
   const [text, setText] = useState('');
@@ -80,6 +81,9 @@ const App = () => {
       <ChatBox onButton={onButton} isLoading={isLoading}/>
     </div>
   );
+  return (
+    <Textbox text="lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem lorem "/>
+  )
 };
 
 export default App;
