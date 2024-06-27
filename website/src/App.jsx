@@ -111,11 +111,9 @@ const App = () => {
     });
   };
 
-  // return <Fog />;
   return (
-    <div
-      className={`app-container ${theme === 2 ? "app-container-magic" : ""}`}
-    >
+    <div className={`app-container ${theme === 2 && "app-container-magic"}`}>
+      {/* Absolutes */}
       <ThemeSwitcher theme={theme} setTheme={setTheme} />
       <div className="absolute top-0 w-full mt-5 z-10 flex justify-center">
         <h1 className={`app-title ${theme === 2 ? "app-title-magic" : ""}`}>
@@ -123,22 +121,21 @@ const App = () => {
           {theme === 2 ? <MagicText /> : "finnGPT"}
         </h1>
       </div>
-      {theme === 0 ? (
-        <>
-          <div className="content-area">{renderCompletions()}</div>
-        </>
-      ) : theme === 1 ? (
-        <>
-          <Background />
-          <Textbox text={renderCompletions()} theme={1} />
-        </>
-      ) : (
-        <>
-          <Textbox text={renderCompletions()} theme={2} />
-          <FireflyEffect />
-          <Fog />
-        </>
-      )}
+      {/* Normal */}
+      <div className={`${theme === 0 ? "theme-visible" : "theme-hidden"}`}>
+        <div className="content-area">{renderCompletions()}</div>
+      </div>
+      {/* Space */}
+      <Background currentTheme={theme} />
+      <div className={`${theme === 1 ? "theme-visible" : "theme-hidden"}`}>
+        <Textbox text={renderCompletions()} theme={1} />
+      </div>
+      {/* Magic */}
+      <div className={`${theme === 2 ? "theme-visible" : "theme-hidden"}`}>
+        <Textbox text={renderCompletions()} theme={2} />
+        <FireflyEffect />
+        <Fog />
+      </div>
       <ChatBox onButton={onButton} isLoading={isLoading} theme={theme} />
     </div>
   );
