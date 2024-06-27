@@ -11,7 +11,7 @@ CORS(app)
 
 # Load model and tokenizer once at startup
 enc = tiktoken.get_encoding("gpt2")
-checkpoint_path = 'artifacts/model_60000.pt'
+checkpoint_path = 'artifacts/model_70000.pt'
 device = torch.device("cpu")
 
 try:
