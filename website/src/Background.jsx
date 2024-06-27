@@ -1,4 +1,5 @@
-import React, { useRef, useEffect, useState } from "react";
+import PropTypes from "prop-types";
+import { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 
 const Background = ({ currentTheme }) => {
@@ -7,6 +8,8 @@ const Background = ({ currentTheme }) => {
   const [isBackgroundReady, setIsBackgroundReady] = useState(false);
 
   useEffect(() => {
+    const mountRefCurrent = mountRef.current;
+
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -16,7 +19,7 @@ const Background = ({ currentTheme }) => {
     );
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    mountRef.current.appendChild(renderer.domElement);
+    mountRefCurrent.appendChild(renderer.domElement);
 
     const starCount = 10000;
     const stars = new THREE.Group();
@@ -71,11 +74,11 @@ const Background = ({ currentTheme }) => {
 
       renderer.dispose();
 
-      if (mountRef.current && renderer.domElement) {
-        mountRef.current.removeChild(renderer.domElement);
+      if (mountRefCurrent && renderer.domElement) {
+        mountRefCurrent.removeChild(renderer.domElement);
       }
     };
-  }, []);
+  }, [mountRef, sceneRef, setIsBackgroundReady]);
 
   useEffect(() => {
     if (!isBackgroundReady) return;
@@ -121,6 +124,10 @@ const Background = ({ currentTheme }) => {
       }}
     />
   );
+};
+
+Background.propTypes = {
+  currentTheme: PropTypes.number.isRequired,
 };
 
 export default Background;

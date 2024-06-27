@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect } from "react";
 import { Settings, Rocket, Wand2, Menu } from "lucide-react";
 
 const ThemeSwitcher = ({ theme, setTheme }) => {
@@ -84,6 +85,11 @@ const ThemeSwitcher = ({ theme, setTheme }) => {
       </div>
     </>
   );
+};
+
+ThemeSwitcher.propTypes = {
+  theme: PropTypes.number.isRequired,
+  setTheme: PropTypes.func.isRequired,
 };
 
 export default ThemeSwitcher;

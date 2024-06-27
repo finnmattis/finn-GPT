@@ -1,6 +1,6 @@
-import React from "react";
+import PropTypes from "prop-types";
 
-const Textbox = ({ text, theme = 2 }) => {
+const Textbox = ({ text, theme }) => {
   const getThemeStyles = () => {
     if (theme === 2) {
       return {
@@ -78,6 +78,11 @@ const Textbox = ({ text, theme = 2 }) => {
       </div>
     </div>
   );
+};
+
+Textbox.propTypes = {
+  text: PropTypes.node.isRequired,
+  theme: PropTypes.oneOf([0, 1, 2]).isRequired,
 };
 
 export default Textbox;

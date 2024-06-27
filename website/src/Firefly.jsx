@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useState, useEffect } from "react";
 
 const Firefly = ({ x, y }) => (
   <div
@@ -15,6 +16,11 @@ const Firefly = ({ x, y }) => (
     }}
   />
 );
+
+Firefly.propTypes = {
+  x: PropTypes.number.isRequired,
+  y: PropTypes.number.isRequired,
+};
 
 const FireflyEffect = ({ count = 30 }) => {
   const [fireflies, setFireflies] = useState([]);
@@ -71,6 +77,10 @@ const FireflyEffect = ({ count = 30 }) => {
       </style>
     </div>
   );
+};
+
+FireflyEffect.propTypes = {
+  count: PropTypes.number.isRequired,
 };
 
 export default FireflyEffect;
