@@ -21,7 +21,7 @@
   background-repeat: repeat-x;
   background-size: contain;
   background-position: center;
-  animation: marquee 30s linear infinite;
+  animation: marquee 30s linear infinite alternate;
 }
 
 .fog-img-second {
@@ -29,7 +29,7 @@
   background-repeat: repeat-x;
   background-size: contain;
   background-position: center;
-  animation: marquee 15s linear infinite;
+  animation: marquee 15s linear infinite alternate;
 }
 
 @keyframes marquee {
