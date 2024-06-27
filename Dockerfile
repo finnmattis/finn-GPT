@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy only the necessary files
 COPY endpoint.py ./
 COPY model.py ./
-COPY artifacts/model_60000.pt ./artifacts/model_60000.pt
+COPY artifacts/model_70000.pt ./artifacts/model_70000.pt
 
 # Make port 5000 available to the world outside this container
 EXPOSE 8080

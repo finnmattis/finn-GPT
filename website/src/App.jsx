@@ -22,7 +22,9 @@ const App = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:5000/?context=${encodeURIComponent(input)}`,
+        `https://finn-gpt-enoprmj2xa-uc.a.run.app/?context=${encodeURIComponent(
+          input
+        )}`,
         {
           signal: abortControllerRef.current.signal,
         }
