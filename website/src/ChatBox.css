@@ -168,3 +168,7 @@
 .glyph-animate {
   animation: glyphAnimation 3s linear infinite;
 }
+
+.theme-transition {
+  transition: all 0.5s ease-in-out;
+}

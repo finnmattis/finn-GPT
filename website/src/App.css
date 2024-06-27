@@ -8,10 +8,19 @@
   background-repeat: no-repeat;
   background-size: cover;
   background-attachment: fixed;
-  /* transition: all 0.5s ease-in-out; */
 }
 
 .app-container-magic {
+  display: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  height: 100vw;
+  box-sizing: border-box;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
   background-image: url("/bg.jpeg");
 }
 
@@ -21,7 +30,6 @@
   font-size: 2.5rem;
   font-weight: bold;
   text-align: center;
-  /* transition: all 0.5s ease-in-out; */
 }
 
 .app-title-magic {
@@ -41,7 +49,6 @@
   align-items: center;
   margin-top: 100px;
   padding-bottom: 200px;
-  /* transition: all 0.5s ease-in-out; */
 }
 
 .text-wrapper {
@@ -49,7 +56,6 @@
   font-size: 22px;
   line-height: 1.6;
   margin-bottom: 20px;
-  /* transition: all 0.5s ease-in-out; */
 }
 
 .text-gen {
@@ -58,12 +64,10 @@
   text-align: left;
   white-space: pre-wrap;
   word-wrap: break-word;
-  /* transition: all 0.5s ease-in-out; */
 }
 
 .error {
   color: #ff6b6b;
-  /* transition: color 0.5s ease-in-out; */
 }
 
 .separator {
@@ -72,7 +76,6 @@
   height: 2px;
   background-color: rgba(255, 255, 255, 0.2);
   margin: 20px 0;
-  /* transition: all 0.5s ease-in-out; */
 }
 
 .theme-transition {

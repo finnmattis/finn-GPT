@@ -112,7 +112,12 @@ const App = () => {
   };
 
   return (
-    <div className={`app-container ${theme === 2 && "app-container-magic"}`}>
+    <div className={`app-container}`}>
+      <div
+        className={`app-container-magic theme-transition ${
+          theme === 2 ? "theme-visible" : "theme-hidden"
+        }`}
+      ></div>
       {/* Absolutes */}
       <ThemeSwitcher theme={theme} setTheme={setTheme} />
       <div className="absolute top-0 w-full mt-5 z-10 flex justify-center">
