@@ -56,9 +56,16 @@ const App = () => {
                 "Uh Oh. Failed to fetch response from server.";
               return newCompletions;
             } else {
+              const filteredData = data.replace(/[^\x20-\x7E]/g, "");
               setCompletions((prev) => {
                 const newCompletions = [...prev];
-                newCompletions[newCompletions.length - 1].content += data;
+                const lastIndex = newCompletions.length - 1;
+
+                // Hacky solution - React weird
+                if (!newCompletions[lastIndex].content.endsWith(data)) {
+                  newCompletions[lastIndex].content += data;
+                }
+
                 return newCompletions;
               });
             }
@@ -67,6 +74,7 @@ const App = () => {
       }
     } catch (err) {
       if (err.name !== "AbortError") {
+        console.log(err);
         setCompletions((prev) => {
           const newCompletions = [...prev];
           newCompletions[newCompletions.length - 1].type = "error";
