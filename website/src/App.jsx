@@ -50,15 +50,30 @@ const App = () => {
             if (data === "[DONE]") {
               setIsLoading(false);
             } else if (data === "[ERROR]") {
-              const newCompletions = [...prev];
-              newCompletions[newCompletions.length - 1].type = "error";
-              newCompletions[newCompletions.length - 1].content =
-                "Uh Oh. Failed to fetch response from server.";
-              return newCompletions;
+              setCompletions((prev) => {
+                const newCompletions = [...prev];
+                newCompletions[newCompletions.length - 1].type = "error";
+                newCompletions[newCompletions.length - 1].content =
+                  "Uh Oh. Failed to fetch response from server.";
+                return newCompletions;
+              });
             } else {
               setCompletions((prev) => {
                 const newCompletions = [...prev];
-                newCompletions[newCompletions.length - 1].content += data;
+                const lastIndex = newCompletions.length - 1;
+
+                let filteredData;
+                if (data === "<newline>") {
+                  filteredData = "\n";
+                } else {
+                  filteredData = data.replace(/[^\x20-\x7E\u2013]/g, "");
+                }
+
+                // hacky solution cause react weird
+                if (!newCompletions[lastIndex].content.endsWith(filteredData)) {
+                  newCompletions[lastIndex].content += filteredData;
+                }
+
                 return newCompletions;
               });
             }
@@ -67,6 +82,7 @@ const App = () => {
       }
     } catch (err) {
       if (err.name !== "AbortError") {
+        console.log(err);
         setCompletions((prev) => {
           const newCompletions = [...prev];
           newCompletions[newCompletions.length - 1].type = "error";
@@ -114,7 +130,7 @@ const App = () => {
   return (
     <div className={`app-container}`}>
       <div
-        className={`app-container app-container-magic theme-transition ${
+        className={`app-container-magic theme-transition ${
           theme === 2 ? "theme-visible" : "theme-hidden"
         }`}
       ></div>

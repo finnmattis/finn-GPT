@@ -1,10 +1,2 @@
-base code:
-make flask api post not get
-endoftext
-
-website:
-
-spaces and compression when sending tokens
-
 final:
 clean up code

@@ -65,7 +65,17 @@ def inference():
                     tokens = torch.cat((tokens, xcol), dim=1)
 
                     latest_token = xcol.item()
-                    yield f"data: {enc.decode([latest_token])}\n\n"
+                    decoded_token = enc.decode([latest_token])
+                    if decoded_token == "<|endoftext|>":
+                        break
+                    print(decoded_token, end="")
+                    
+                    # Replace newline characters with a special token
+                    if decoded_token == '\n':
+                        yield f"data: <newline>\n\n"
+                    else:
+                        yield f"data: {decoded_token}\n\n"
+                    
                     start_time = time.time()  # Reset the timer after each successful token generation
             except Exception as e:
                 print(f"Error during token generation: {e}")
