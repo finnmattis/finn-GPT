@@ -3,4 +3,4 @@ torch==2.1.1+cpu
 tiktoken==0.4.0
 Flask==2.3.2
 flask_cors==3.0.10
-gunicorn==20.1.0
+gunicorn==22.0.0
