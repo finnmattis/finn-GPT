@@ -129,7 +129,7 @@ class GPT(nn.Module):
         from transformers import GPT2LMHeadModel
         print(f"loading weights from pretrained gpt: {model_type}")
 
-        # create a from-scratch initialized minGPT model
+        # create model
         config_args = {
             'gpt2':         dict(n_layer=12, n_head=12, n_embd=768),  # 124M params
             'gpt2-medium':  dict(n_layer=24, n_head=16, n_embd=1024), # 350M params

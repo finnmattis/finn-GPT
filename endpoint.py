@@ -28,31 +28,25 @@ except Exception as e:
     model = None
 
 def top_p_sampling(logits, p, temperature, frequency_penalty, token_counts):
-    # Apply temperature
+    # Temperature
     logits = logits / temperature
     
     # Apply frequency penalty
     for token, count in token_counts.items():
         logits[0][token] -= frequency_penalty * count
     
-    # Sort the logits in descending order
+    # Top-P sampling
     sorted_logits, sorted_indices = torch.sort(logits, descending=True)
-    
-    # Calculate cumulative probabilities
     cumulative_probs = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
-    
-    # Remove tokens with cumulative probability above the threshold
     sorted_indices_to_remove = cumulative_probs > p
     
-    # Shift the indices to the right to keep also the first token above the threshold
     sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
     sorted_indices_to_remove[..., 0] = 0
     
-    # Scatter sorted tensors to original indexing
     indices_to_remove = sorted_indices_to_remove.scatter(1, sorted_indices, sorted_indices_to_remove)
     logits[indices_to_remove] = float('-inf')
     
-    # Sample from the filtered distribution
+    # Sample
     probs = F.softmax(logits, dim=-1)
     return torch.multinomial(probs, 1)
 

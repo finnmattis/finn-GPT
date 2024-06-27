@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
-import "./ChatBox.css";
+import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import { SendHorizonal, Square } from "lucide-react";
+import "./ChatBox.css";
 
 const MagicalGlyphs = () => {
   const glyphs = [
@@ -119,11 +120,17 @@ const ChatBox = ({ onButton, isLoading, theme = 0 }) => {
         </button>
       </div>
       <p className={`disclaimer-text ${theme === 2 ? "text-transparent" : ""}`}>
-        FinnGPT can not make mistakes. Don't bother verifying important
+        FinnGPT can not make mistakes. Don&apos;t bother verifying important
         information.
       </p>
     </div>
   );
+};
+
+ChatBox.propTypes = {
+  onButton: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool.isRequired,
+  theme: PropTypes.oneOf([0, 1, 2]),
 };
 
 export default ChatBox;

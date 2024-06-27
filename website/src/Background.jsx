@@ -1,4 +1,5 @@
-import React, { useRef, useEffect, useState } from "react";
+import PropTypes from "prop-types";
+import { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 
 const Background = ({ currentTheme }) => {
@@ -121,6 +122,10 @@ const Background = ({ currentTheme }) => {
       }}
     />
   );
+};
+
+Background.propTypes = {
+  currentTheme: PropTypes.number.isRequired,
 };
 
 export default Background;

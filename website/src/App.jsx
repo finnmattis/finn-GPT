@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import ChatBox from "./ChatBox";
 import "./App.css";
 import Textbox from "./Textbox";
@@ -37,10 +37,12 @@ const App = () => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
-      while (true) {
+      let isDone = false;
+      while (!isDone) {
         const { done, value } = await reader.read();
         if (done) {
-          break;
+          isDone = true;
+          continue;
         }
 
         const chunk = decoder.decode(value);
