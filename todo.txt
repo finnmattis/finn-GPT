@@ -1,2 +1,5 @@
 final:
 clean up code
+
+max_toks
+temperature
