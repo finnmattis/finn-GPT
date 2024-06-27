@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./ChatBox.css";
 import { SendHorizonal, Square } from "lucide-react";
 
@@ -32,6 +32,18 @@ const MagicalGlyphs = () => {
 
 const ChatBox = ({ onButton, isLoading, theme = 0 }) => {
   const [input, setInput] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
 
   const handleSend = () => {
     if (input.trim() || isLoading) {
@@ -93,7 +105,7 @@ const ChatBox = ({ onButton, isLoading, theme = 0 }) => {
           onKeyDown={handleKeyPress}
           placeholder={getPlaceholderText()}
         />
-        {theme === 2 && <MagicalGlyphs />}
+        {theme === 2 && !isMobile && <MagicalGlyphs />}
         <button
           className={`${buttonClass} ${
             theme === 2

@@ -11,16 +11,6 @@
 }
 
 .app-container-magic {
-  display: fixed;
-  left: 0;
-  top: 0;
-  height: 100vh;
-  height: 100vw;
-  box-sizing: border-box;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-attachment: fixed;
   background-image: url("/bg.jpeg");
 }
 
