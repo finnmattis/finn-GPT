@@ -27,6 +27,35 @@ except Exception as e:
     print(f"Error loading model: {e}")
     model = None
 
+def top_p_sampling(logits, p, temperature, frequency_penalty, token_counts):
+    # Apply temperature
+    logits = logits / temperature
+    
+    # Apply frequency penalty
+    for token, count in token_counts.items():
+        logits[0][token] -= frequency_penalty * count
+    
+    # Sort the logits in descending order
+    sorted_logits, sorted_indices = torch.sort(logits, descending=True)
+    
+    # Calculate cumulative probabilities
+    cumulative_probs = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
+    
+    # Remove tokens with cumulative probability above the threshold
+    sorted_indices_to_remove = cumulative_probs > p
+    
+    # Shift the indices to the right to keep also the first token above the threshold
+    sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
+    sorted_indices_to_remove[..., 0] = 0
+    
+    # Scatter sorted tensors to original indexing
+    indices_to_remove = sorted_indices_to_remove.scatter(1, sorted_indices, sorted_indices_to_remove)
+    logits[indices_to_remove] = float('-inf')
+    
+    # Sample from the filtered distribution
+    probs = F.softmax(logits, dim=-1)
+    return torch.multinomial(probs, 1)
+
 @app.route('/', methods=['GET', 'OPTIONS'])
 def inference():
     if request.method == 'OPTIONS':
@@ -40,15 +69,30 @@ def inference():
     if not prompt:
         return jsonify({"error": "The 'context' parameter is required and cannot be empty."}), 400
     
+    # Get optional parameters with default values
+    max_tokens = request.args.get('max_tokens', default=100, type=int)
+    temperature = request.args.get('temperature', default=0.7, type=float)
+    top_p = request.args.get('top_p', default=0.9, type=float)
+    frequency_penalty = request.args.get('frequency_penalty', default=0.3, type=float)
+
+    # Validate parameters
+    if max_tokens <= 0:
+        return jsonify({"error": "max_tokens must be greater than 0"}), 400
+    if temperature <= 0:
+        return jsonify({"error": "temperature must be greater than 0"}), 400
+    if top_p <= 0 or top_p > 1:
+        return jsonify({"error": "top_p must be between 0 and 1"}), 400
+    if frequency_penalty < 0:
+        return jsonify({"error": "frequency_penalty must be non-negative"}), 400
+    
     tokens = enc.encode(prompt)
     tokens = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)
-
-    MAX_LENGTH = 100
 
     def generate_tokens():
         nonlocal tokens
         start_time = time.time()
-        while tokens.size(1) < MAX_LENGTH:
+        token_counts = {}
+        while tokens.size(1) < len(tokens[0]) + max_tokens:
             try:
                 # Check if the client has disconnected (5 seconds timeout)
                 if time.time() - start_time > 5:
@@ -58,13 +102,16 @@ def inference():
                 with torch.no_grad():
                     logits, _ = model(tokens)
                     logits = logits[:, -1, :]
-                    probs = F.softmax(logits, dim=-1)
-                    topk_probs, topk_indices = torch.topk(probs, 50, dim=-1)
-                    ix = torch.multinomial(topk_probs, 1)
-                    xcol = torch.gather(topk_indices, -1, ix)
+                    
+                    # Apply top-p sampling with temperature and frequency penalty
+                    xcol = top_p_sampling(logits, p=top_p, temperature=temperature, 
+                                          frequency_penalty=frequency_penalty, token_counts=token_counts)
+                    
                     tokens = torch.cat((tokens, xcol), dim=1)
 
                     latest_token = xcol.item()
+                    token_counts[latest_token] = token_counts.get(latest_token, 0) + 1
+                    
                     decoded_token = enc.decode([latest_token])
                     if decoded_token == "<|endoftext|>":
                         break
