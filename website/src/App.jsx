@@ -114,7 +114,7 @@ const App = () => {
   return (
     <div className={`app-container}`}>
       <div
-        className={`app-container-magic theme-transition ${
+        className={`app-container app-container-magic theme-transition ${
           theme === 2 ? "theme-visible" : "theme-hidden"
         }`}
       ></div>

@@ -18,7 +18,12 @@ const Textbox = ({ text, theme = 2 }) => {
   return (
     <div
       className="z-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 overflow-hidden"
-      style={{ maxWidth: "50vw", height: "70vh", ...getThemeStyles() }}
+      style={{
+        width: "50vw",
+        minWidth: "300px",
+        height: "70vh",
+        ...getThemeStyles(),
+      }}
     >
       {theme === 1 && (
         <svg
