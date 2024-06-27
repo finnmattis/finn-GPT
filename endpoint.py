@@ -65,6 +65,7 @@ def inference():
                     tokens = torch.cat((tokens, xcol), dim=1)
 
                     latest_token = xcol.item()
+                    print(enc.decode([latest_token]), end="")
                     yield f"data: {enc.decode([latest_token])}\n\n"
                     start_time = time.time()  # Reset the timer after each successful token generation
             except Exception as e:
