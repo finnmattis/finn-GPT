@@ -41,25 +41,19 @@ python local_inference.py
 To build the Docker image:
 
 ```
-
 docker build --platform linux/amd64 -t finn-gpt .
-
 ```
 
 Tag the Docker image:
 
 ```
-
 docker tag finn-gpt us-central1-docker.pkg.dev/finngpt-427606/models/finn-gpt
-
 ```
 
 Push the Docker image to the repository:
 
 ```
-
 docker push us-central1-docker.pkg.dev/finngpt-427606/models/finn-gpt
-
 ```
 
 ## Frontend Deployment
@@ -67,9 +61,7 @@ docker push us-central1-docker.pkg.dev/finngpt-427606/models/finn-gpt
 To deploy the website:
 
 ```
-
 cd website; sudo rm -r dist; npm run build; firebase deploy
-
 ```
 
 ## Pre-Training Run Information
@@ -81,7 +73,3 @@ cd website; sudo rm -r dist; npm run build; firebase deploy
 ## Performance
 
 finn-GPT, despite having the same number of parameters (124M) as OpenAI's GPT-2 124M, outperforms it in various language tasks.
-
-```
-
-```
