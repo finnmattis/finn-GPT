@@ -83,7 +83,7 @@ const ChatBox = ({ onButton, isLoading, theme = 0 }) => {
   );
 
   return (
-    <div className={chatboxClass}>
+    <div className={`${chatboxClass} z-10`}>
       <div className="input-wrapper">
         <input
           className={inputClass}

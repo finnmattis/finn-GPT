@@ -134,9 +134,9 @@ const App = () => {
         </>
       ) : (
         <>
-          <Fog />
-          <FireflyEffect />
           <Textbox text={renderCompletions()} theme={2} />
+          <FireflyEffect />
+          <Fog />
         </>
       )}
       <ChatBox onButton={onButton} isLoading={isLoading} theme={theme} />
