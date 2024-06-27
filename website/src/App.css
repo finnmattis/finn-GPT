@@ -2,10 +2,8 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  box-sizing: border-box;
   width: 100vw;
-
-  /* for magic theme */
+  box-sizing: border-box;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -13,6 +11,16 @@
 }
 
 .app-container-magic {
+  display: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  height: 100vw;
+  box-sizing: border-box;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
   background-image: url("/bg.jpeg");
 }
 
@@ -68,4 +76,18 @@
   height: 2px;
   background-color: rgba(255, 255, 255, 0.2);
   margin: 20px 0;
+}
+
+.theme-transition {
+  transition: all 0.5s ease-in-out;
+}
+
+.theme-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.theme-visible {
+  opacity: 1;
+  pointer-events: auto;
 }

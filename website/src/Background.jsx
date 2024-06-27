@@ -1,8 +1,10 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 
-const Background = () => {
+const Background = ({ currentTheme }) => {
   const mountRef = useRef(null);
+  const sceneRef = useRef(null);
+  const [isBackgroundReady, setIsBackgroundReady] = useState(false);
 
   useEffect(() => {
     const scene = new THREE.Scene();
@@ -41,22 +43,8 @@ const Background = () => {
     scene.add(stars);
     camera.position.z = 5;
 
-    let animationFrameId;
-
-    function animate() {
-      animationFrameId = requestAnimationFrame(animate);
-      stars.children.forEach((star) => {
-        star.position.z += 2;
-        if (star.position.z > 1000) {
-          star.position.z = -1000;
-          star.position.x = Math.random() * 2000 - 1000;
-          star.position.y = Math.random() * 2000 - 1000;
-        }
-      });
-      renderer.render(scene, camera);
-    }
-
-    animate();
+    sceneRef.current = { scene, camera, renderer, stars };
+    setIsBackgroundReady(true);
 
     const handleResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -68,7 +56,6 @@ const Background = () => {
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      cancelAnimationFrame(animationFrameId);
 
       // Dispose of Three.js resources
       scene.traverse((object) => {
@@ -90,6 +77,34 @@ const Background = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isBackgroundReady) return;
+
+    const { scene, camera, renderer, stars } = sceneRef.current;
+    let animationFrameId;
+
+    function animate() {
+      animationFrameId = requestAnimationFrame(animate);
+      stars.children.forEach((star) => {
+        star.position.z += 2;
+        if (star.position.z > 1000) {
+          star.position.z = -1000;
+          star.position.x = Math.random() * 2000 - 1000;
+          star.position.y = Math.random() * 2000 - 1000;
+        }
+      });
+      renderer.render(scene, camera);
+    }
+
+    if (currentTheme === 1) {
+      animate();
+    }
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [currentTheme, isBackgroundReady]);
+
   return (
     <div
       ref={mountRef}
@@ -100,6 +115,9 @@ const Background = () => {
         width: "100vw",
         height: "100vh",
         overflow: "hidden",
+        opacity: currentTheme === 1 ? 1 : 0,
+        transition: "opacity 0.5s ease-in-out",
+        pointerEvents: currentTheme === 1 ? "auto" : "none",
       }}
     />
   );
