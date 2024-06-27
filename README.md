@@ -3,9 +3,20 @@ with DDP: "nohup python -m torch.distributed.launch --use-env --standalone --npr
 
 cd ~/downloads; rsync -avz -e "ssh -i finn.pem" ubuntu@164.152.108.16:finn-GPT/log/model_xxxxx.pt ~/Desktop
 
-
 model intellegience:
 finn-GPT has advanced math skills:
 
-one plus three equals _____.
+one plus three equals **\_**.
 4
+
+started training ~1:15 a.m.
+finish at ~11:13 a.m.
+
+docker build --platform linux/amd64 -t finn-gpt .
+docker tag finn-gpt us-central1-docker.pkg.dev/finngpt-427606/models/finn-gpt
+docker push us-central1-docker.pkg.dev/finngpt-427606/models/finn-gpt
+
+todo:
+
+final:
+clean up code

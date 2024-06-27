@@ -17,7 +17,7 @@ if torch.cuda.is_available():
 print(f"using device: {device}")
 
 # get model from checkpoint
-checkpoint_path = 'artifacts/model_60000.pt'
+checkpoint_path = 'artifacts/model_70000.pt'
 checkpoint = torch.load(checkpoint_path, map_location=torch.device(device))
 print(f"Loading finn-GPT step {checkpoint['step']}")
 print(f"val loss: {checkpoint['val_loss']}")

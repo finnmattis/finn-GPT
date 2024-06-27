@@ -5,7 +5,6 @@
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  /* background-color: red; */
   z-index: 1;
 }
 
@@ -21,7 +20,7 @@
   background-repeat: repeat-x;
   background-size: contain;
   background-position: center;
-  animation: marquee 30s linear infinite;
+  animation: marquee 30s linear infinite alternate;
 }
 
 .fog-img-second {
@@ -29,7 +28,7 @@
   background-repeat: repeat-x;
   background-size: contain;
   background-position: center;
-  animation: marquee 15s linear infinite;
+  animation: marquee 15s linear infinite alternate;
 }
 
 @keyframes marquee {

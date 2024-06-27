@@ -22,7 +22,9 @@ const App = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:5000/?context=${encodeURIComponent(input)}`,
+        `https://finn-gpt-enoprmj2xa-uc.a.run.app/?context=${encodeURIComponent(
+          input
+        )}`,
         {
           signal: abortControllerRef.current.signal,
         }
@@ -110,7 +112,9 @@ const App = () => {
     }
   };
 
-  const renderCompletions = () => {
+  const renderCompletions = (theme_of_caller) => {
+    if (theme_of_caller !== theme) return;
+    console.log("hi");
     return completions.map((item, index) => {
       return (
         <div key={index} className="text-wrapper">
@@ -142,18 +146,20 @@ const App = () => {
           {theme === 2 ? <MagicText /> : "finnGPT"}
         </h1>
       </div>
-      {/* Normal */}
-      <div className={`${theme === 0 ? "theme-visible" : "theme-hidden"}`}>
-        <div className="content-area">{renderCompletions()}</div>
+      {/* Normal (note: w-0 h-0 to prevent the content area from going below the textbox on space and magic*/}
+      <div
+        className={`${theme === 0 ? "theme-visible" : "theme-hidden w-0 h-0"}`}
+      >
+        <div className="content-area">{renderCompletions(0)}</div>
       </div>
       {/* Space */}
       <Background currentTheme={theme} />
       <div className={`${theme === 1 ? "theme-visible" : "theme-hidden"}`}>
-        <Textbox text={renderCompletions()} theme={1} />
+        <Textbox text={renderCompletions(1)} theme={1} />
       </div>
       {/* Magic */}
       <div className={`${theme === 2 ? "theme-visible" : "theme-hidden"}`}>
-        <Textbox text={renderCompletions()} theme={2} />
+        <Textbox text={renderCompletions(2)} theme={2} />
         <FireflyEffect />
         <Fog />
       </div>
