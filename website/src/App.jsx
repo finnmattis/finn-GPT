@@ -50,20 +50,28 @@ const App = () => {
             if (data === "[DONE]") {
               setIsLoading(false);
             } else if (data === "[ERROR]") {
-              const newCompletions = [...prev];
-              newCompletions[newCompletions.length - 1].type = "error";
-              newCompletions[newCompletions.length - 1].content =
-                "Uh Oh. Failed to fetch response from server.";
-              return newCompletions;
+              setCompletions((prev) => {
+                const newCompletions = [...prev];
+                newCompletions[newCompletions.length - 1].type = "error";
+                newCompletions[newCompletions.length - 1].content =
+                  "Uh Oh. Failed to fetch response from server.";
+                return newCompletions;
+              });
             } else {
-              const filteredData = data.replace(/[^\x20-\x7E]/g, "");
               setCompletions((prev) => {
                 const newCompletions = [...prev];
                 const lastIndex = newCompletions.length - 1;
 
-                // Hacky solution - React weird
-                if (!newCompletions[lastIndex].content.endsWith(data)) {
-                  newCompletions[lastIndex].content += data;
+                let filteredData;
+                if (data === "<newline>") {
+                  filteredData = "\n";
+                } else {
+                  filteredData = data.replace(/[^\x20-\x7E\u2013]/g, "");
+                }
+
+                // hacky solution cause react weird
+                if (!newCompletions[lastIndex].content.endsWith(filteredData)) {
+                  newCompletions[lastIndex].content += filteredData;
                 }
 
                 return newCompletions;
