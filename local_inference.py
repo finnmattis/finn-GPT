@@ -8,13 +8,18 @@ import sys
 # Params:
 MAX_LENGTH = 100
 TEMPERATURE = .7
-TOP_P = .9
+P = .9
 FREQUENCY_PENALTY = .3
+
+# Get device
+device = "cpu"
+if torch.cuda.is_available():
+    device = "cuda"
+print(f"Using device: {device}")
 
 models = []
 
 # Get model_num
-
 filenames = os.listdir("artifacts")
 for filename in filenames:
     if filename.startswith("model_") and filename.endswith(".pt"):
@@ -35,46 +40,87 @@ while True:
         break
     print("Please enter a valid training step")
 
-# autodetect device
-device = "cpu"
-if torch.cuda.is_available():
-    device = "cuda"
-print(f"using device: {device}")
-
-# get model from checkpoint
+# Get model from checkpoint
 checkpoint_path = f"artifacts/model_{model_num}.pt"
 checkpoint = torch.load(checkpoint_path, map_location=torch.device(device))
-print(f"Loading finn-GPT step {checkpoint['step']}")
-print(f"val loss: {checkpoint['val_loss']}")
+print(f"Validation loss: {checkpoint['val_loss']}")
 model = GPT(checkpoint["config"])
 state_dict = checkpoint["model"]
 model.load_state_dict({key.replace('_orig_mod.', ''): value for key, value in state_dict.items()})
 model.eval()
 
-# prompt -> tokens
-print("Enter a prompt: ")
-prompt = input()
-os.system("clear")
-sys.stdout.write(prompt)
-sys.stdout.flush()
-enc = tiktoken.get_encoding("gpt2")
-tokens = enc.encode(prompt)
-tokens = torch.tensor(tokens, dtype=torch.long)
-tokens = tokens.unsqueeze(0)
-xgen = tokens.to(device)
+# Get advanced settings
 
-def top_p_sampling(logits, p, temperature, frequency_penalty, token_counts):
+while True:
+    print("Would you like to tinker with the advanced settings[y\\n]?")
+    answer = input()
+    if answer in ["y", "n"]:
+        break
+
+if answer == "y":
+    while True:
+        print("What would you like the maximum number of tokens to be?")
+        answer = input()
+        try:
+            answer = int(answer)
+            if answer < 1024:
+                MAX_LENGTH = answer
+                break
+            print("Answer must be less than 1024.")
+        except:
+            print("Answer must be an integer.")
+    
+    while True:
+        print("What would you like the temperature to be?")
+        answer = input()
+        try:
+            answer = float(answer)
+            if answer >= 0 and answer <= 1:
+                TEMPERATURE = answer
+                break
+            print("Answer must be greater or equal to 0 and less or equal to 1.")
+        except:
+            print("Answer must be a number.")
+    
+    while True:
+        print("What would you like the p to be for top-p sampling?")
+        answer = input()
+        try:
+            answer = float(answer)
+            if answer > 0 and answer <= 1:
+                P = answer
+                break
+            print("Answer must be greater than 0 and less than or equal to 1.")
+        except:
+            print("Answer must be a number.")
+    
+    while True:
+        print("What would you like the frequency penalty to be?")
+        answer = input()
+        try:
+            answer = float(answer)
+            if answer >= 0 and answer <= 1:
+                FREQUENCY_PENALTY = answer
+                break
+            print("Answer must be greater than or equal to 0 and less than or equal to 1.")
+        except:
+            print("Answer must be a number.")
+    
+
+def sample(logits, token_counts):
     # Temperature
-    logits = logits / temperature
+    if TEMPERATURE == 0:
+        return torch.argmax(logits, dim=-1).unsqueeze(-1)
+    logits = logits / TEMPERATURE
     
     # Apply frequency penalty
     for token, count in token_counts.items():
-        logits[0][token] -= frequency_penalty * count
+        logits[0][token] -= FREQUENCY_PENALTY * count
     
     # Top-P sampling
     sorted_logits, sorted_indices = torch.sort(logits, descending=True)
     cumulative_probs = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
-    sorted_indices_to_remove = cumulative_probs > p
+    sorted_indices_to_remove = cumulative_probs > P
     
     sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
     sorted_indices_to_remove[..., 0] = 0
@@ -86,23 +132,45 @@ def top_p_sampling(logits, p, temperature, frequency_penalty, token_counts):
     probs = F.softmax(logits, dim=-1)
     return torch.multinomial(probs, 1)
 
-token_counts = {}
+# User loop
 
-while xgen.size(1) < MAX_LENGTH:
-    with torch.no_grad():
-        logits, _ = model(xgen)
-        logits = logits[:, -1, :]
-        
-        xcol = top_p_sampling(logits, TOP_P, TEMPERATURE, 
-                                FREQUENCY_PENALTY, token_counts)
-        
-        xgen = torch.cat((xgen, xcol), dim=1)
+while True:
+    # Prompt -> tokens
+    os.system("clear")
+    print("Enter a prompt or type exit: ")
+    prompt = input()
+    if prompt == "exit":
+        break
+    os.system("clear")
+    sys.stdout.write(prompt)
+    sys.stdout.flush()
+    enc = tiktoken.get_encoding("gpt2")
+    tokens = enc.encode(prompt)
+    tokens = torch.tensor(tokens, dtype=torch.long)
+    tokens = tokens.unsqueeze(0)
+    xgen = tokens.to(device)
 
-        latest_token = xcol.item()
-        token_counts[latest_token] = token_counts.get(latest_token, 0) + 1
-        
-        decoded_token = enc.decode([latest_token])
-        if decoded_token == "<|endoftext|>":
+    token_counts = {}
+
+    while xgen.size(1) < MAX_LENGTH:
+        with torch.no_grad():
+            logits, _ = model(xgen)
+            logits = logits[:, -1, :]
+            
+            xcol = sample(logits, token_counts)
+            
+            xgen = torch.cat((xgen, xcol), dim=1)
+
+            latest_token = xcol.item()
+            token_counts[latest_token] = token_counts.get(latest_token, 0) + 1
+            
+            decoded_token = enc.decode([latest_token])
+            if decoded_token == "<|endoftext|>":
+                break
+            sys.stdout.write(decoded_token)
+            sys.stdout.flush()
+    while True:
+        print("\n\nType \"continue\" to move on")
+        answer = input()
+        if answer == "continue":
             break
-        sys.stdout.write(decoded_token)
-        sys.stdout.flush()
