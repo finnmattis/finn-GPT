@@ -110,6 +110,8 @@ if answer == "y":
 def sample(logits, token_counts):
     # Temperature
     if TEMPERATURE == 0:
+        for token, count in token_counts.items():
+            logits[0][token] -= FREQUENCY_PENALTY * count
         return torch.argmax(logits, dim=-1).unsqueeze(-1)
     logits = logits / TEMPERATURE
     
