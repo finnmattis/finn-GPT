@@ -79,7 +79,7 @@ def load_tokens(filename):
     tokens = tokens.astype(np.int32)
     return torch.tensor(tokens, dtype=torch.long)
 
-class DataLoaderLite:
+class DataLoader:
     def __init__(self, process_rank, num_processes, split):
         assert split in {'train', 'val'}
         self.process_rank = process_rank
@@ -152,8 +152,8 @@ grad_accum_steps = TOTAL_BATCH_SIZE // (MINI_BATCH_SIZE * BATCH_SEQ_LENGTH * ddp
 if master_process:
     print(f"total desired batch size: {TOTAL_BATCH_SIZE}")
     print(f"=> calculated gradient accumulation steps: {grad_accum_steps}")
-train_loader = DataLoaderLite(process_rank=ddp_rank, num_processes=ddp_world_size, split="train")
-val_loader = DataLoaderLite(process_rank=ddp_rank, num_processes=ddp_world_size, split="val")
+train_loader = DataLoader(process_rank=ddp_rank, num_processes=ddp_world_size, split="train")
+val_loader = DataLoader(process_rank=ddp_rank, num_processes=ddp_world_size, split="val")
 
 # create model
 model = GPT(GPTConfig(vocab_size=50304)) # "nice" number
