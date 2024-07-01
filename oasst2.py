@@ -2,6 +2,7 @@ from datasets import load_dataset
 from collections import defaultdict
 import numpy as np
 import tiktoken
+from tqdm import tqdm
 
 enc = tiktoken.get_encoding("gpt2")
 user = enc.encode('<|user|>')
@@ -18,60 +19,52 @@ def tokenize(message):
     tokens_np_uint16 = tokens_np.astype(np.uint16)
     return tokens_np_uint16
 
-def preprocess_open_assistant_data():
-    dataset = load_dataset("OpenAssistant/oasst1")
-    data = dataset['train']
-    
+def preprocess_open_assistant_data(split):
+    dataset = load_dataset("OpenAssistant/oasst2")
+    data = dataset[split]
     conversations = defaultdict(list)
-    for message in data:
-        if message['lang'] == 'en':  # Filter for English messages only
+    for message in tqdm(data, desc=f"Grouping messages ({split})"):
+        if message['lang'] == 'en':
             conversations[message['message_tree_id']].append(message)
-
+    
     processed_data = []
-    for conversation in conversations.values():
-        processed_conversation = []
+    for conversation in tqdm(list(conversations.values()), desc=f"Processing conversations ({split})"):
+        conv = []
         current_label = None
         current_messages = []
-
         for message in conversation:
             if message['role'] != current_label:
                 if current_label is not None:
-                    processed_conversation.append([current_label,current_messages])
+                    conv.append(current_messages)
                 current_label = message['role']
                 current_messages = [tokenize(message)]
             else:
                 current_messages.append(tokenize(message))
         
-        # Add the last group of messages
         if current_label is not None:
-            processed_conversation.append([current_label,current_messages])
-
-        processed_data.append(processed_conversation)
-
-    # Convert to NumPy array
-    np_data = np.array(processed_data, dtype=object)
+            conv.append(current_messages)
+        processed_data.append(conv)
     
-    return np_data
+    return np.array(processed_data, dtype=object)
 
-# Run the preprocessing
-preprocessed_data = preprocess_open_assistant_data()
+print("Starting preprocessing...")
 
-# Save the preprocessed data to a NumPy file
-output_file = 'oasst2.npy'
-np.save(output_file, preprocessed_data)
+# Process train data
+train_data = preprocess_open_assistant_data('train')
+train_output_file = 'oasst2_train.npy'
+np.save(train_output_file, train_data)
+print(f"Train data has been saved to {train_output_file}")
 
-print(f"Preprocessed data has been saved to {output_file}")
+# Process validation data
+val_data = preprocess_open_assistant_data('validation')
+val_output_file = 'oasst2_val.npy'
+np.save(val_output_file, val_data)
+print(f"Validation data has been saved to {val_output_file}")
 
-# Print some statistics
-print(f"Total number of conversations: {len(preprocessed_data)}")
-print(f"Average number of message groups per conversation: {np.mean([len(conv) for conv in preprocessed_data]):.2f}")
+# Print statistics for train data
+print(f"Total number of conversations in train set: {len(train_data)}")
+print(f"Average number of message groups per conversation in train set: {np.mean([len(conv) for conv in train_data]):.2f}")
 
-# Optionally, print a sample conversation
-# print("\nHere's a sample conversation:")
-# print(json.dumps(preprocessed_data[0], indent=2))
-
-# To demonstrate how to load and use the data
-loaded_data = np.load(output_file, allow_pickle=True)
-print("\nLoaded data shape:", loaded_data.shape)
-print("First conversation in loaded data:")
-# print(json.dumps(loaded_data[0], indent=2))
+# Print statistics for validation data
+print(f"Total number of conversations in validation set: {len(val_data)}")
+print(f"Average number of message groups per conversation in validation set: {np.mean([len(conv) for conv in val_data]):.2f}")
