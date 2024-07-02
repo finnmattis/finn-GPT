@@ -12,8 +12,7 @@ CORS(app)
 # Load model and tokenizer once at startup
 enc = tiktoken.get_encoding("gpt2")
 checkpoint_path = 'artifacts/base_model_70000.pt'
-device = "cpu"
-print(f"using device: {device}")
+device = torch.device("cpu")
 
 try:
     checkpoint = torch.load(checkpoint_path, map_location=device)
@@ -24,8 +23,6 @@ try:
     model.load_state_dict({key.replace('_orig_mod.', ''): value for key, value in state_dict.items()})
     model.to(device)
     model.eval()
-
-
 except Exception as e:
     print(f"Error loading model: {e}")
     model = None
@@ -62,9 +59,9 @@ def inference():
     if model is None:
         return jsonify({"error": "Model not loaded. Please check server logs."}), 500
 
-    text = request.args.get('context', default='', type=str)
-    if not text:
-        return jsonify({"error": "The 'context' parameter is required and cannot be empty."}), 1024
+    prompt = request.args.get('context', default='', type=str)
+    if not prompt:
+        return jsonify({"error": "The 'context' parameter is required and cannot be empty."}), 400
     
     # Get optional parameters with default values
     max_tokens = request.args.get('max_tokens', default=100, type=int)
@@ -74,7 +71,7 @@ def inference():
 
     # Validate parameters
     if max_tokens <= 0:
-        return jsonify({"error": "max_tokens must be greater than 0"}), 1024
+        return jsonify({"error": "max_tokens must be greater than 0"}), 400
     if temperature <= 0:
         return jsonify({"error": "temperature must be greater than 0"}), 400
     if top_p <= 0 or top_p > 1:
@@ -82,15 +79,14 @@ def inference():
     if frequency_penalty < 0:
         return jsonify({"error": "frequency_penalty must be non-negative"}), 400
     
-    tokens = enc.encode(text)
+    tokens = enc.encode(prompt)
     tokens = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)
 
     def generate_tokens():
-        nonlocal text
         nonlocal tokens
         start_time = time.time()
         token_counts = {}
-        while tokens.size(1) < max_tokens:
+        while tokens.size(1) < len(tokens[0]) + max_tokens:
             try:
                 # Check if the client has disconnected (5 seconds timeout)
                 if time.time() - start_time > 5:
@@ -111,8 +107,7 @@ def inference():
                     token_counts[latest_token] = token_counts.get(latest_token, 0) + 1
                     
                     decoded_token = enc.decode([latest_token])
-                    text += decoded_token
-
+                    
                     # Replace newline characters with a special token
                     if decoded_token == '\n':
                         yield f"data: <newline>\n\n"
