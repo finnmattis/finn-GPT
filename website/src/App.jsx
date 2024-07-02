@@ -191,17 +191,40 @@ const App = () => {
         className={`${theme === 0 ? "theme-visible" : "theme-hidden w-0 h-0"}`}
       >
         <div className="content-area">
-          {mode === 0 ? <Messages content={conv} /> : renderCompletions(0)}
+          {mode === 0 ? (
+            <Messages content={conv} theme={theme} />
+          ) : (
+            renderCompletions(0)
+          )}
         </div>
       </div>
       {/* Space */}
       <Background currentTheme={theme} />
-      <div className={`${theme === 1 ? "theme-visible" : "theme-hidden"}`}>
-        <Textbox text={mode === 0 ? conv : renderCompletions(1)} theme={1} />
+      <div
+        className={`${theme === 1 ? "theme-visible" : "theme-hidden w-0 h-0"}`}
+      >
+        {mode === 0 ? (
+          <Messages content={conv} theme={theme} />
+        ) : (
+          <Textbox
+            text={mode === 0 ? conv : renderCompletions(theme)}
+            theme={theme}
+          />
+        )}
+        {/* <Textbox text={mode === 0 ? conv : renderCompletions(1)} theme={1} /> */}
       </div>
       {/* Magic */}
-      <div className={`${theme === 2 ? "theme-visible" : "theme-hidden"}`}>
-        <Textbox text={mode === 0 ? conv : renderCompletions(2)} theme={2} />
+      <div
+        className={`${theme === 2 ? "theme-visible" : "theme-hidden w-0 h-0"}`}
+      >
+        {mode === 0 ? (
+          <Messages content={conv} theme={theme} />
+        ) : (
+          <Textbox
+            text={mode === 0 ? conv : renderCompletions(theme)}
+            theme={theme}
+          />
+        )}
         <FireflyEffect count={30} />
         <Fog />
       </div>
