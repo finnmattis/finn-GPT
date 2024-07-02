@@ -83,3 +83,4 @@ Error when exceeding context with API
 Make the local_inference UI more intuitive
 button to clear in frontend
 organize files
+more stats - finetune stats

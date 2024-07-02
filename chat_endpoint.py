@@ -11,25 +11,12 @@ CORS(app)
 
 # Load model and tokenizer once at startup
 enc = tiktoken.get_encoding("gpt2")
-base_checkpoint_path = 'artifacts/base_model_70000.pt'
-chat_checkpoint_path = 'artifacts/chat_model_02000.pt'
-
+checkpoint_path = 'artifacts/chat_model_02000.pt'
 device = "cpu"
-if torch.cuda.is_available():
-    device = "cuda"
 print(f"using device: {device}")
 
 try:
-    base_checkpoint = torch.load(base_checkpoint_path, map_location=device)
-    print(f"Loading base finn-GPT step {base_checkpoint['step']}")
-    print(f"val loss: {base_checkpoint['val_loss']}")
-    base_model = GPT(base_checkpoint["config"])
-    base_state_dict = base_checkpoint["model"]
-    base_model.load_state_dict({key.replace('_orig_mod.', ''): value for key, value in base_state_dict.items()})
-    base_model.to(device)
-    base_model.eval()
-
-    chat_checkpoint = torch.load(chat_checkpoint_path, map_location=device)
+    chat_checkpoint = torch.load(checkpoint_path, map_location=device)
     print(f"Loading chat finn-GPT step {chat_checkpoint['step']}")
     print(f"val loss: {chat_checkpoint['val_loss']}")
     chat_model = GPT(chat_checkpoint["config"])

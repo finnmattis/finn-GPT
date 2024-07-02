@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 gpt_loss_baseline = 3.2924 # GPT-2 124M baseline
 
-with open("artifacts/log.txt", "r") as file:
+with open("training_log.txt", "r") as file:
     lines = file.readlines()
 
 #get streams
