@@ -1,0 +1,17 @@
+FROM python:3.8-slim
+
+WORKDIR /usr/src/app
+
+COPY api/requirements.txt ./
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY api/base_endpoint.py ./api/base_endpoint.py
+COPY ../model.py ./
+COPY ../artifacts/base_model_70000.pt ./artifacts/base_model_70000.pt
+
+EXPOSE 8080
+
+WORKDIR /usr/src/app/api
+
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "base_endpoint:app"]

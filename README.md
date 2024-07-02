@@ -41,19 +41,19 @@ python local_inference.py
 To build the Docker image:
 
 ```
-docker build --platform linux/amd64 -t finn-gpt .
+docker build --platform linux/amd64 -t base-finn-gpt .
 ```
 
 Tag the Docker image:
 
 ```
-docker tag finn-gpt us-central1-docker.pkg.dev/finngpt-427606/models/finn-gpt
+docker tag finn-gpt us-central1-docker.pkg.dev/finngpt-427606/models/base-finn-gpt
 ```
 
 Push the Docker image to the repository:
 
 ```
-docker push us-central1-docker.pkg.dev/finngpt-427606/models/finn-gpt
+docker push us-central1-docker.pkg.dev/finngpt-427606/models/base-finn-gpt
 ```
 
 ## Frontend Deployment

@@ -1,4 +1,4 @@
-name: pytorch_nightly_env
+name: finn-gpt
 channels:
   - defaults
   - pytorch-nightly

@@ -1,0 +1,17 @@
+FROM python:3.8-slim
+
+WORKDIR /usr/src/app
+
+COPY api/requirements.txt ./
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY api/chat_endpoint.py ./api/chat_endpoint.py
+COPY ../model.py ./
+COPY ../artifacts/chat_model_02000.pt ./artifacts/chat_model_02000.pt
+
+EXPOSE 8080
+
+WORKDIR /usr/src/app/api
+
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "chat_endpoint:app"]
