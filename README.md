@@ -75,9 +75,11 @@ cd website; sudo rm -r dist; npm run build; firebase deploy
 finn-GPT, despite having the same number of parameters (124M) as OpenAI's GPT-2 124M, outperforms it in various language tasks.
 
 Todo:
+deploy (not to cloud run)
 Rename data.py to data_loader.py
 Move other DataLoader data_loader data.py
 Clean up Train code
 Error when exceeding context with API
 Make the local_inference UI more intuitive
 button to clear in frontend
+organize files
