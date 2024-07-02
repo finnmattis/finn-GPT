@@ -39,7 +39,7 @@ for filename in filenames:
 models = sorted(models)
 models_str = ""
 for index, model in enumerate(models):
-    models_str += f"finnGPT-{model}"
+    models_str += f"{model_type}-finnGPT-{model}"
     if index == len(models) - 2:
         models_str += ", and "
     elif index < len(models) - 2:

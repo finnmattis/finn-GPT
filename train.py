@@ -11,43 +11,37 @@ from torch.nn import functional as F
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 from model import GPT, GPTConfig
-from data import OasstLoader
+from data_loader import FineWebLoader, OasstLoader
+
+TRAIN_STAGE = "pretrain"
+assert TRAIN_STAGE in ["pretrain", "finetune"]
 
 ####################################################################################################
-#                                        Pre-Train Hyperparameters                                 #
+#                                         Hyperparameters                                          #
 ####################################################################################################
 
-# # Batch
-# TOTAL_BATCH_SIZE = 524288 # 2**19 (nice number), ~0.5M, in number of tokens as in GPT-3 paper
-# MINI_BATCH_SIZE = 64 # micro batch size
-# BATCH_SEQ_LENGTH = 1024 # normally same as context_size - 1024 for GPT-2 - 2048 for GPT-3
+if TRAIN_STAGE == "pretrain":
+    # Batch
+    TOTAL_BATCH_SIZE = 524288 # 2**19 (nice number), ~0.5M, in number of tokens as in GPT-3 paper
+    MINI_BATCH_SIZE = 64 # micro batch size
+    BATCH_SEQ_LENGTH = 1024 # normally same as context_size - 1024 for GPT-2 - 2048 for GPT-3
 
-# # Learning Rate
-# MAX_LR = 6e-4 * 2 # 6e-4 for GPT-3 but prob conservative - could go up to 3x
-# MIN_LR = MAX_LR * 0.1
-# WARMUP_STEPS = 715
-# MAX_STEPS = 19073*5 # 19,073 steps is ~1 epoch, if data is 10B tokens and batch size 0.5M tokens
+    # Learning Rate
+    MAX_LR = 6e-4 * 2 # 6e-4 for GPT-3 but prob conservative - could go up to 3x
+    MIN_LR = MAX_LR * 0.1
+    WARMUP_STEPS = 715
+    MAX_STEPS = 19073*5 # 19,073 steps is ~1 epoch, if data is 10B tokens and batch size 0.5M tokens
+else:
+    # Batch
+    TOTAL_BATCH_SIZE = 16384 # fine-tune has much smaller batches so train on smth like A10
+    MINI_BATCH_SIZE = 16 # micro batch size
+    BATCH_SEQ_LENGTH = 1024 # need to maintain same from pretrain
 
-# # Eval
-# EVAL_INTERVAL = 250
-# CHECKPOINT_INTERVAL = 500
-
-# SEED = 6+9+14+14 # FINN
-
-####################################################################################################
-#                                        Fine-Tune Hyperparameters                                 #
-####################################################################################################
-
-# Batch
-TOTAL_BATCH_SIZE = 16384 # 2**19 (nice number), ~0.5M, in number of tokens as in GPT-3 paper
-MINI_BATCH_SIZE = 16 # micro batch size
-BATCH_SEQ_LENGTH = 1024 # normally same as context_size - 1024 for GPT-2 - 2048 for GPT-3
-
-# Learning Rate
-MAX_LR = 3e-5 # 6e-4 for GPT-3 but prob conservative - could go up to 3x
-MIN_LR = MAX_LR * 0.1
-WARMUP_STEPS = 50
-MAX_STEPS = 19073*5 # 19,073 steps is ~1 epoch, if data is 10B tokens and batch size 0.5M tokens
+    # Learning Rate
+    MAX_LR = 3e-5 # Much slower learning rate for small adjustments
+    MIN_LR = MAX_LR * 0.1
+    WARMUP_STEPS = 50
+    MAX_STEPS = 2000 # ~ 5 epochs
 
 # Eval
 EVAL_INTERVAL = 250
@@ -56,8 +50,9 @@ CHECKPOINT_INTERVAL = 500
 SEED = 6+9+14+14 # FINN
 
 ####################################################################################################
-#                                        Pytorch Setup                                             #
+#                                         Torch Setup                                              #
 ####################################################################################################
+
 
 # torchrun command sets the env variables RANK, LOCAL_RANK, and WORLD_SIZE
 ddp = int(os.environ.get('RANK', -1)) != -1 # is this a ddp run?
@@ -92,80 +87,6 @@ if torch.cuda.is_available():
 
 torch.set_float32_matmul_precision('high')
 
-####################################################################################################
-#                                        Data and Eval                                             #
-####################################################################################################
-
-def load_tokens(filename):
-    tokens = np.load(filename)
-    tokens = tokens.astype(np.int32)
-    return torch.tensor(tokens, dtype=torch.long)
-
-class DataLoader:
-    def __init__(self, process_rank, num_processes, split):
-        assert split in {'train', 'val'}
-        self.process_rank = process_rank
-        self.num_processes = num_processes
-
-        # get the shard filenames
-        data_root = "edu_fineweb10B"
-        shards = os.listdir(data_root)
-        shards = [s for s in shards if split in s]
-        shards = sorted(shards)
-        shards = [os.path.join(data_root, s) for s in shards]
-        self.shards = shards
-        assert len(shards) > 0, f"no shards found for split {split}"
-        if master_process:
-            print(f"found {len(shards)} shards for split {split}")
-        self.reset()
-
-    def reset(self):
-        self.current_shard = 0
-        self.tokens = load_tokens(self.shards[self.current_shard])
-        self.current_position = MINI_BATCH_SIZE * BATCH_SEQ_LENGTH * self.process_rank
-
-    def next_batch(self):
-        B, T = MINI_BATCH_SIZE, BATCH_SEQ_LENGTH
-        buf = self.tokens[self.current_position : self.current_position+B*T+1]
-        x = (buf[:-1]).view(B, T)
-        y = (buf[1:]).view(B, T)
-
-        # advance the position in the tensor
-        self.current_position += B * T * self.num_processes
-        # if loading the next batch would be out of bounds, advance to next shard
-        if self.current_position + (B * T * self.num_processes + 1) > len(self.tokens):
-            self.current_shard = (self.current_shard + 1) % len(self.shards)
-            self.tokens = load_tokens(self.shards[self.current_shard])
-            self.current_position = B * T * self.process_rank
-        return x, y
-
-# helper function for HellaSwag eval
-# takes tokens, mask, and logits, returns the index of the completion with the lowest loss
-def get_most_likely_row(tokens, mask, logits):
-    # evaluate the autoregressive loss at all positions
-    shift_logits = (logits[..., :-1, :]).contiguous()
-    shift_tokens = (tokens[..., 1:]).contiguous()
-    flat_shift_logits = shift_logits.view(-1, shift_logits.size(-1))
-    flat_shift_tokens = shift_tokens.view(-1)
-    shift_losses = F.cross_entropy(flat_shift_logits, flat_shift_tokens, reduction='none')
-    shift_losses = shift_losses.view(tokens.size(0), -1)
-
-    # now get the average loss just for the completion region (where mask == 1), in each row
-    shift_mask = (mask[..., 1:]).contiguous() # we must shift mask, so we start at the last prompt token
-    masked_shift_losses = shift_losses * shift_mask
-
-    # sum and divide by the number of 1s in the mask
-    sum_loss = masked_shift_losses.sum(dim=1)
-    avg_loss = sum_loss / shift_mask.sum(dim=1)
-
-    # now we have a loss for each of the 4 completions the one with the lowest loss should be the most likely
-    pred_norm = avg_loss.argmin().item()
-    return pred_norm
-
-####################################################################################################
-#                                        Setup Train                                               #
-####################################################################################################
-
 enc = tiktoken.get_encoding("gpt2")
 
 # create data loaders
@@ -174,22 +95,25 @@ grad_accum_steps = TOTAL_BATCH_SIZE // (MINI_BATCH_SIZE * BATCH_SEQ_LENGTH * ddp
 if master_process:
     print(f"total desired batch size: {TOTAL_BATCH_SIZE}")
     print(f"=> calculated gradient accumulation steps: {grad_accum_steps}")
-# train_loader = DataLoader(process_rank=ddp_rank, num_processes=ddp_world_size, split="train")
-# val_loader = DataLoader(process_rank=ddp_rank, num_processes=ddp_world_size, split="val")
+
+if TRAIN_STAGE == "pretrain":
+    train_loader = FineWebLoader(split="train", batch_size=MINI_BATCH_SIZE, block_size=BATCH_SEQ_LENGTH, process_rank=ddp_rank, num_processes=ddp_world_size)
+    val_loader = FineWebLoader(split="val", batch_size=MINI_BATCH_SIZE, block_size=BATCH_SEQ_LENGTH, process_rank=ddp_rank, num_processes=ddp_world_size)
 
 train_loader = OasstLoader(split="train", batch_size=MINI_BATCH_SIZE, block_size=BATCH_SEQ_LENGTH)
 val_loader = OasstLoader(split="val", batch_size=MINI_BATCH_SIZE, block_size=BATCH_SEQ_LENGTH)
 
-# create model
-# model = GPT(GPTConfig(vocab_size=50304)) # "nice" number
-
-# from checkpoint
-checkpoint_path = f"artifacts/base_model_70000.pt"
-checkpoint = torch.load(checkpoint_path)
-print(f"Validation loss: {checkpoint['val_loss']}")
-model = GPT(checkpoint["config"])
-state_dict = checkpoint["model"]
-model.load_state_dict({key.replace('_orig_mod.', ''): value for key, value in state_dict.items()})
+if TRAIN_STAGE == "pretrain":
+    # from scratch
+    model = GPT(GPTConfig(vocab_size=50304)) # "nice" number
+else:
+    # from checkpoint
+    checkpoint_path = f"artifacts/base_model_70000.pt"
+    checkpoint = torch.load(checkpoint_path)
+    print(f"Validation loss: {checkpoint['val_loss']}")
+    model = GPT(checkpoint["config"])
+    state_dict = checkpoint["model"]
+    model.load_state_dict({key.replace('_orig_mod.', ''): value for key, value in state_dict.items()})
 
 
 model.to(device)
