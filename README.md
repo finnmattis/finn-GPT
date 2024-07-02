@@ -80,3 +80,4 @@ Move other DataLoader data_loader data.py
 Clean up Train code
 Error when exceeding context with API
 Make the local_inference UI more intuitive
+button to clear in frontend

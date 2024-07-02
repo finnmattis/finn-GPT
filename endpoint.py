@@ -11,21 +11,33 @@ CORS(app)
 
 # Load model and tokenizer once at startup
 enc = tiktoken.get_encoding("gpt2")
-checkpoint_path = 'artifacts/model_70000.pt'
+base_checkpoint_path = 'artifacts/base_model_70000.pt'
+chat_checkpoint_path = 'artifacts/chat_model_02000.pt'
 device = torch.device("cpu")
 
 try:
-    checkpoint = torch.load(checkpoint_path, map_location=device)
-    print(f"Loading finn-GPT step {checkpoint['step']}")
-    print(f"val loss: {checkpoint['val_loss']}")
-    model = GPT(checkpoint["config"])
-    state_dict = checkpoint["model"]
-    model.load_state_dict({key.replace('_orig_mod.', ''): value for key, value in state_dict.items()})
-    model.to(device)
-    model.eval()
+    base_checkpoint = torch.load(base_checkpoint_path, map_location=device)
+    print(f"Loading base finn-GPT step {base_checkpoint['step']}")
+    print(f"val loss: {base_checkpoint['val_loss']}")
+    base_model = GPT(base_checkpoint["config"])
+    base_state_dict = base_checkpoint["model"]
+    base_model.load_state_dict({key.replace('_orig_mod.', ''): value for key, value in base_state_dict.items()})
+    base_model.to(device)
+    base_model.eval()
+
+    chat_checkpoint = torch.load(chat_checkpoint_path, map_location=device)
+    print(f"Loading chat finn-GPT step {chat_checkpoint['step']}")
+    print(f"val loss: {chat_checkpoint['val_loss']}")
+    chat_model = GPT(chat_checkpoint["config"])
+    chat_state_dict = chat_checkpoint["model"]
+    chat_model.load_state_dict({key.replace('_orig_mod.', ''): value for key, value in chat_state_dict.items()})
+    chat_model.to(device)
+    chat_model.eval()
+
+
 except Exception as e:
     print(f"Error loading model: {e}")
-    model = None
+    base_model = None
 
 def top_p_sampling(logits, p, temperature, frequency_penalty, token_counts):
     # Temperature
@@ -56,14 +68,17 @@ def inference():
         # Preflight request. Reply successfully:
         return app.make_default_options_response()
 
-    if model is None:
+    if base_model is None or chat_model is None:
         return jsonify({"error": "Model not loaded. Please check server logs."}), 500
 
-    prompt = request.args.get('context', default='', type=str)
-    if not prompt:
+    text = request.args.get('context', default='', type=str)
+    if not text:
         return jsonify({"error": "The 'context' parameter is required and cannot be empty."}), 400
     
+    def is_it_true(value):
+        return value.lower() == 'true'
     # Get optional parameters with default values
+    isChat = request.args.get('isChat', default=True, type=is_it_true)
     max_tokens = request.args.get('max_tokens', default=100, type=int)
     temperature = request.args.get('temperature', default=0.7, type=float)
     top_p = request.args.get('top_p', default=0.9, type=float)
@@ -71,7 +86,7 @@ def inference():
 
     # Validate parameters
     if max_tokens <= 0:
-        return jsonify({"error": "max_tokens must be greater than 0"}), 400
+        return jsonify({"error": "max_tokens must be greater than 0"}), 1024
     if temperature <= 0:
         return jsonify({"error": "temperature must be greater than 0"}), 400
     if top_p <= 0 or top_p > 1:
@@ -79,14 +94,15 @@ def inference():
     if frequency_penalty < 0:
         return jsonify({"error": "frequency_penalty must be non-negative"}), 400
     
-    tokens = enc.encode(prompt)
+    tokens = enc.encode(text)
     tokens = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(device)
 
     def generate_tokens():
+        nonlocal text
         nonlocal tokens
         start_time = time.time()
         token_counts = {}
-        while tokens.size(1) < len(tokens[0]) + max_tokens:
+        while tokens.size(1) < max_tokens:
             try:
                 # Check if the client has disconnected (5 seconds timeout)
                 if time.time() - start_time > 5:
@@ -94,7 +110,10 @@ def inference():
                     break
 
                 with torch.no_grad():
-                    logits, _ = model(tokens)
+                    if isChat:
+                        logits, _ = chat_model(tokens)
+                    else:
+                        logits, _ = base_model(tokens)
                     logits = logits[:, -1, :]
                     
                     # Apply top-p sampling with temperature and frequency penalty
@@ -107,15 +126,16 @@ def inference():
                     token_counts[latest_token] = token_counts.get(latest_token, 0) + 1
                     
                     decoded_token = enc.decode([latest_token])
-                    if decoded_token == "<|endoftext|>":
-                        break
-                    print(decoded_token, end="")
-                    
+                    text += decoded_token
+
                     # Replace newline characters with a special token
                     if decoded_token == '\n':
                         yield f"data: <newline>\n\n"
                     else:
                         yield f"data: {decoded_token}\n\n"
+
+                    if not isChat and decoded_token == "<|endoftext|>" or isChat and text.endswith("<|user|>"):
+                        break
                     
                     start_time = time.time()  # Reset the timer after each successful token generation
             except Exception as e:

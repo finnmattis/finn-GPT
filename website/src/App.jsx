@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import ChatBox from "./ChatBox";
 import "./App.css";
 import Textbox from "./Textbox";
@@ -7,8 +7,11 @@ import ThemeSwitcher from "./ThemeSwitcher";
 import MagicText from "./MagicText";
 import FireflyEffect from "./Firefly";
 import Fog from "./Fog";
+import Messages from "./Messages";
 
 const App = () => {
+  const [isChat, setIsChat] = useState(true);
+  const [conv, setConv] = useState("");
   const [completions, setCompletions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [theme, setTheme] = useState(0);
@@ -16,19 +19,23 @@ const App = () => {
 
   const fetchStream = async (input) => {
     setIsLoading(true);
-    setCompletions((prev) => [...prev, { type: "text", content: input }]);
+    if (isChat) {
+      input = "<|user|>" + input + "<|assistant|>";
+      setConv((prev) => prev + input);
+    } else {
+      setCompletions((prev) => [...prev, { type: "text", content: input }]);
+    }
 
     abortControllerRef.current = new AbortController();
 
     try {
-      const response = await fetch(
-        `https://finn-gpt-enoprmj2xa-uc.a.run.app/?context=${encodeURIComponent(
-          input
-        )}`,
-        {
-          signal: abortControllerRef.current.signal,
-        }
-      );
+      const url = new URL("http://127.0.0.1:5000/");
+      url.searchParams.append("context", input);
+      url.searchParams.append("isChat", isChat);
+
+      const response = await fetch(url.toString(), {
+        signal: abortControllerRef.current.signal,
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -54,32 +61,51 @@ const App = () => {
             if (data === "[DONE]") {
               setIsLoading(false);
             } else if (data === "[ERROR]") {
-              setCompletions((prev) => {
-                const newCompletions = [...prev];
-                newCompletions[newCompletions.length - 1].type = "error";
-                newCompletions[newCompletions.length - 1].content =
-                  "Uh Oh. Failed to fetch response from server.";
-                return newCompletions;
-              });
+              if (isChat) {
+                setConv(
+                  (prev) =>
+                    (prev +=
+                      "<|error|>" +
+                      "Uh Oh. Failed to fetch response from server.")
+                );
+              } else {
+                setCompletions((prev) => {
+                  const newCompletions = [...prev];
+                  newCompletions[newCompletions.length - 1].type = "error";
+                  newCompletions[newCompletions.length - 1].content =
+                    "Uh Oh. Failed to fetch response from server.";
+                  return newCompletions;
+                });
+              }
             } else {
-              setCompletions((prev) => {
-                const newCompletions = [...prev];
-                const lastIndex = newCompletions.length - 1;
+              let filteredData;
+              if (data === "<newline>") {
+                filteredData = "\n";
+              } else {
+                filteredData = data.replace(/[^\x20-\x7E\u2013]/g, "");
+              }
+              if (isChat) {
+                setConv((prev) => {
+                  if (prev.endsWith("<|user|")) {
+                    return prev.slice(0, -8);
+                  }
+                  return prev + filteredData;
+                });
+              } else {
+                setCompletions((prev) => {
+                  const newCompletions = [...prev];
+                  const lastIndex = newCompletions.length - 1;
 
-                let filteredData;
-                if (data === "<newline>") {
-                  filteredData = "\n";
-                } else {
-                  filteredData = data.replace(/[^\x20-\x7E\u2013]/g, "");
-                }
+                  // hacky solution cause react weird
+                  if (
+                    !newCompletions[lastIndex].content.endsWith(filteredData)
+                  ) {
+                    newCompletions[lastIndex].content += filteredData;
+                  }
 
-                // hacky solution cause react weird
-                if (!newCompletions[lastIndex].content.endsWith(filteredData)) {
-                  newCompletions[lastIndex].content += filteredData;
-                }
-
-                return newCompletions;
-              });
+                  return newCompletions;
+                });
+              }
             }
           }
         });
@@ -87,13 +113,21 @@ const App = () => {
     } catch (err) {
       if (err.name !== "AbortError") {
         console.log(err);
-        setCompletions((prev) => {
-          const newCompletions = [...prev];
-          newCompletions[newCompletions.length - 1].type = "error";
-          newCompletions[newCompletions.length - 1].content =
-            "Uh Oh. Failed to fetch response from server.";
-          return newCompletions;
-        });
+        if (isChat) {
+          setConv(
+            (prev) =>
+              (prev +=
+                "<|error|>" + "Uh Oh. Failed to fetch response from server.")
+          );
+        } else {
+          setCompletions((prev) => {
+            const newCompletions = [...prev];
+            newCompletions[newCompletions.length - 1].type = "error";
+            newCompletions[newCompletions.length - 1].content =
+              "Uh Oh. Failed to fetch response from server.";
+            return newCompletions;
+          });
+        }
       }
       setIsLoading(false);
     }
@@ -152,16 +186,18 @@ const App = () => {
       <div
         className={`${theme === 0 ? "theme-visible" : "theme-hidden w-0 h-0"}`}
       >
-        <div className="content-area">{renderCompletions(0)}</div>
+        <div className="content-area">
+          <Messages content={conv} />
+        </div>
       </div>
       {/* Space */}
       <Background currentTheme={theme} />
       <div className={`${theme === 1 ? "theme-visible" : "theme-hidden"}`}>
-        <Textbox text={renderCompletions(1)} theme={1} />
+        <Textbox text={isChat ? conv : renderCompletions(1)} theme={1} />
       </div>
       {/* Magic */}
       <div className={`${theme === 2 ? "theme-visible" : "theme-hidden"}`}>
-        <Textbox text={renderCompletions(2)} theme={2} />
+        <Textbox text={isChat ? conv : renderCompletions(2)} theme={2} />
         <FireflyEffect />
         <Fog />
       </div>

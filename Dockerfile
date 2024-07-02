@@ -8,7 +8,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY endpoint.py ./
 COPY model.py ./
-COPY artifacts/model_70000.pt ./artifacts/model_70000.pt
+COPY artifacts/base_model_70000.pt ./artifacts/base_model_70000.pt
+COPY artifacts/chat_model_02000.pt ./artifacts/chat_model_02000.pt
 
 EXPOSE 8080
 
