@@ -1,9 +1,10 @@
 import torch
-from model import GPT
 import tiktoken
 from torch.nn import functional as F
 import os
-import sys
+
+import sys; sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # give acess to parent dir
+from model import GPT
 
 # Params:
 MAX_LENGTH = 1024
@@ -32,7 +33,7 @@ isChat = model_type == "chat"
 models = []
 
 # Get model_num
-filenames = os.listdir("artifacts")
+filenames = os.listdir("../artifacts")
 for filename in filenames:
     if filename.startswith(f"{model_type}_model_") and filename.endswith(".pt"):
         models.append(f"{filename[11:-3]}")
@@ -53,7 +54,7 @@ while True:
     print("Please enter a valid training step")
 
 # Get model from checkpoint
-checkpoint_path = f"artifacts/{model_type}_model_{model_num}.pt"
+checkpoint_path = f"../artifacts/{model_type}_model_{model_num}.pt"
 checkpoint = torch.load(checkpoint_path, map_location=torch.device(device))
 print(f"Validation loss: {checkpoint['val_loss']}")
 model = GPT(checkpoint["config"])

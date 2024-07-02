@@ -2,14 +2,13 @@ import math
 import os
 import time
 
-import numpy as np
 import tiktoken
 import torch
 import torch.distributed as dist
 from torch.distributed import destroy_process_group, init_process_group
-from torch.nn import functional as F
 from torch.nn.parallel import DistributedDataParallel as DDP
 
+import sys; sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # give acess to parent dir
 from model import GPT, GPTConfig
 from data_loader import FineWebLoader, OasstLoader
 
@@ -108,7 +107,7 @@ if TRAIN_STAGE == "pretrain":
     model = GPT(GPTConfig(vocab_size=50304)) # "nice" number
 else:
     # from checkpoint
-    checkpoint_path = f"artifacts/base_model_70000.pt"
+    checkpoint_path = f"../artifacts/base_model_70000.pt"
     checkpoint = torch.load(checkpoint_path)
     print(f"Validation loss: {checkpoint['val_loss']}")
     model = GPT(checkpoint["config"])
