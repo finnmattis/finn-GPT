@@ -3,6 +3,7 @@ from collections import defaultdict
 import numpy as np
 import tiktoken
 from tqdm import tqdm
+import re
 
 enc = tiktoken.get_encoding("gpt2")
 user = enc.encode('<|user|>')
@@ -33,6 +34,7 @@ def preprocess_open_assistant_data(split):
         current_label = None
         current_messages = []
         for message in conversation:
+            message["text"] = re.sub(re.escape("open assistant"), "finn-GPT", message["text"], flags=re.IGNORECASE)
             if message['role'] != current_label:
                 if current_label is not None:
                     conv.append(current_messages)

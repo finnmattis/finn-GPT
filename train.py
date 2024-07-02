@@ -11,20 +11,42 @@ from torch.nn import functional as F
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 from model import GPT, GPTConfig
+from data import OasstLoader
 
 ####################################################################################################
-#                                        Hyperparameters                                           #
+#                                        Pre-Train Hyperparameters                                 #
+####################################################################################################
+
+# # Batch
+# TOTAL_BATCH_SIZE = 524288 # 2**19 (nice number), ~0.5M, in number of tokens as in GPT-3 paper
+# MINI_BATCH_SIZE = 64 # micro batch size
+# BATCH_SEQ_LENGTH = 1024 # normally same as context_size - 1024 for GPT-2 - 2048 for GPT-3
+
+# # Learning Rate
+# MAX_LR = 6e-4 * 2 # 6e-4 for GPT-3 but prob conservative - could go up to 3x
+# MIN_LR = MAX_LR * 0.1
+# WARMUP_STEPS = 715
+# MAX_STEPS = 19073*5 # 19,073 steps is ~1 epoch, if data is 10B tokens and batch size 0.5M tokens
+
+# # Eval
+# EVAL_INTERVAL = 250
+# CHECKPOINT_INTERVAL = 500
+
+# SEED = 6+9+14+14 # FINN
+
+####################################################################################################
+#                                        Fine-Tune Hyperparameters                                 #
 ####################################################################################################
 
 # Batch
-TOTAL_BATCH_SIZE = 524288 # 2**19 (nice number), ~0.5M, in number of tokens as in GPT-3 paper
-MINI_BATCH_SIZE = 64 # micro batch size
+TOTAL_BATCH_SIZE = 16384 # 2**19 (nice number), ~0.5M, in number of tokens as in GPT-3 paper
+MINI_BATCH_SIZE = 16 # micro batch size
 BATCH_SEQ_LENGTH = 1024 # normally same as context_size - 1024 for GPT-2 - 2048 for GPT-3
 
 # Learning Rate
-MAX_LR = 6e-4 * 2 # 6e-4 for GPT-3 but prob conservative - could go up to 3x
+MAX_LR = 3e-5 # 6e-4 for GPT-3 but prob conservative - could go up to 3x
 MIN_LR = MAX_LR * 0.1
-WARMUP_STEPS = 715
+WARMUP_STEPS = 50
 MAX_STEPS = 19073*5 # 19,073 steps is ~1 epoch, if data is 10B tokens and batch size 0.5M tokens
 
 # Eval
@@ -152,11 +174,24 @@ grad_accum_steps = TOTAL_BATCH_SIZE // (MINI_BATCH_SIZE * BATCH_SEQ_LENGTH * ddp
 if master_process:
     print(f"total desired batch size: {TOTAL_BATCH_SIZE}")
     print(f"=> calculated gradient accumulation steps: {grad_accum_steps}")
-train_loader = DataLoader(process_rank=ddp_rank, num_processes=ddp_world_size, split="train")
-val_loader = DataLoader(process_rank=ddp_rank, num_processes=ddp_world_size, split="val")
+# train_loader = DataLoader(process_rank=ddp_rank, num_processes=ddp_world_size, split="train")
+# val_loader = DataLoader(process_rank=ddp_rank, num_processes=ddp_world_size, split="val")
+
+train_loader = OasstLoader(split="train", batch_size=MINI_BATCH_SIZE, block_size=BATCH_SEQ_LENGTH)
+val_loader = OasstLoader(split="val", batch_size=MINI_BATCH_SIZE, block_size=BATCH_SEQ_LENGTH)
 
 # create model
-model = GPT(GPTConfig(vocab_size=50304)) # "nice" number
+# model = GPT(GPTConfig(vocab_size=50304)) # "nice" number
+
+# from checkpoint
+checkpoint_path = f"artifacts/base_model_70000.pt"
+checkpoint = torch.load(checkpoint_path)
+print(f"Validation loss: {checkpoint['val_loss']}")
+model = GPT(checkpoint["config"])
+state_dict = checkpoint["model"]
+model.load_state_dict({key.replace('_orig_mod.', ''): value for key, value in state_dict.items()})
+
+
 model.to(device)
 use_compile = True
 if use_compile:

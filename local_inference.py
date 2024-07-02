@@ -6,10 +6,12 @@ import os
 import sys
 
 # Params:
-MAX_LENGTH = 100
+MAX_LENGTH = 1024
 TEMPERATURE = .7
 P = .9
 FREQUENCY_PENALTY = .3
+
+enc = tiktoken.get_encoding("gpt2")
 
 # Get device
 device = "cpu"
@@ -17,13 +19,23 @@ if torch.cuda.is_available():
     device = "cuda"
 print(f"Using device: {device}")
 
+
+print("Would you like to use a base model or a chat model")
+while True:
+    model_type = input()
+    if model_type in ["base", "chat"]:
+        break
+    print("Please answer with either base or chat")
+
+isChat = model_type == "chat"
+
 models = []
 
 # Get model_num
 filenames = os.listdir("artifacts")
 for filename in filenames:
-    if filename.startswith("model_") and filename.endswith(".pt"):
-        models.append(f"{filename[6:-3]}")
+    if filename.startswith(f"{model_type}_model_") and filename.endswith(".pt"):
+        models.append(f"{filename[11:-3]}")
 models = sorted(models)
 models_str = ""
 for index, model in enumerate(models):
@@ -41,13 +53,14 @@ while True:
     print("Please enter a valid training step")
 
 # Get model from checkpoint
-checkpoint_path = f"artifacts/model_{model_num}.pt"
+checkpoint_path = f"artifacts/{model_type}_model_{model_num}.pt"
 checkpoint = torch.load(checkpoint_path, map_location=torch.device(device))
 print(f"Validation loss: {checkpoint['val_loss']}")
 model = GPT(checkpoint["config"])
 state_dict = checkpoint["model"]
 model.load_state_dict({key.replace('_orig_mod.', ''): value for key, value in state_dict.items()})
 model.eval()
+model.to(device)
 
 # Get advanced settings
 
@@ -134,24 +147,20 @@ def sample(logits, token_counts):
     probs = F.softmax(logits, dim=-1)
     return torch.multinomial(probs, 1)
 
-# User loop
-
-while True:
-    # Prompt -> tokens
+def get_response(text, isChat):
     os.system("clear")
-    print("Enter a prompt or type exit: ")
-    prompt = input()
-    if prompt == "exit":
-        break
-    os.system("clear")
-    sys.stdout.write(prompt)
+    if isChat:
+        printable = text.replace("<|user|>", "\n\nUser: ")
+        printable = printable.replace("<|assistant|>", "\n\nAssistant: ")
+        sys.stdout.write(printable[2:]) # The first user will have a \n before it
+    else:
+        sys.stdout.write(text)
     sys.stdout.flush()
-    enc = tiktoken.get_encoding("gpt2")
-    tokens = enc.encode(prompt)
+
+    tokens = enc.encode(text)
     tokens = torch.tensor(tokens, dtype=torch.long)
     tokens = tokens.unsqueeze(0)
     xgen = tokens.to(device)
-
     token_counts = {}
 
     while xgen.size(1) < MAX_LENGTH:
@@ -167,12 +176,43 @@ while True:
             token_counts[latest_token] = token_counts.get(latest_token, 0) + 1
             
             decoded_token = enc.decode([latest_token])
-            if decoded_token == "<|endoftext|>":
+            text += decoded_token
+            
+            if not isChat and decoded_token == "<|endoftext|>":
+                break
+
+            if isChat and text.endswith("<|user|>"):
+                # get rid of <|user|>
+                sys.stdout.write('\b' * 8)
+                sys.stdout.write(' ' * 8)
+                sys.stdout.write('\b' * 8)
+                sys.stdout.flush()
                 break
             sys.stdout.write(decoded_token)
             sys.stdout.flush()
+    return text
+
+if isChat:
+    conv = "<|user|>"
+    print("Enter a prompt or type exit: ")
     while True:
-        print("\n\nType \"continue\" to move on")
-        answer = input()
-        if answer == "continue":
+        prompt = input()
+        if prompt == "exit":
             break
+        conv += f"{prompt}<|assistant|>"
+        conv = get_response(conv, isChat)
+        print("\n\n\nEnter a prompt or type exit: ")
+else:
+    while True:
+        print("Enter a prompt or type exit: ")
+        prompt = input()
+        if prompt == "exit":
+            break
+        get_response(prompt, isChat)
+        
+        while True:
+            print("\n\nType \"continue\" to move on")
+            answer = input()
+            if answer == "continue":
+                os.system("clear")
+                break
