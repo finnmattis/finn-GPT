@@ -76,8 +76,6 @@ finn-GPT, despite having the same number of parameters (124M) as OpenAI's GPT-2 
 
 Todo:
 Error when exceeding context with API
-Make the local_inference UI more intuitive
 button to clear in frontend
-organize files
 more stats - finetune stats
 markdown in website
