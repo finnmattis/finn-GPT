@@ -1,13 +1,12 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import ChatBox from "./ChatBox";
 import "./App.css";
-import Textbox from "./Textbox";
-import Background from "./Background";
+import StarsBackground from "./StarsBackground";
 import Switcher from "./Switcher";
 import MagicText from "./MagicText";
 import FireflyEffect from "./Firefly";
 import Fog from "./Fog";
-import Messages from "./Messages";
+import Content from "./Content";
 
 const App = () => {
   const [mode, setMode] = useState(0);
@@ -87,7 +86,7 @@ const App = () => {
               if (mode === 0) {
                 setConv((prev) => {
                   if (prev.endsWith("<|user|")) {
-                    return prev.slice(0, -8);
+                    return prev.slice(0, -7);
                   }
                   return prev + filteredData;
                 });
@@ -148,31 +147,8 @@ const App = () => {
     }
   };
 
-  const renderCompletions = (theme_of_caller) => {
-    if (theme_of_caller !== theme) return;
-    return completions.map((item, index) => {
-      return (
-        <div key={index} className="text-wrapper">
-          <p className={`text-gen ${item.type === "error" && "error"}`}>
-            {item.content}
-          </p>
-          {index != completions.length - 1 && (
-            <div key={`separator-${index}`} className="separator">
-              &nbsp;
-            </div>
-          )}
-        </div>
-      );
-    });
-  };
-
   return (
-    <div className={`app-container}`}>
-      <div
-        className={`app-container-magic theme-transition ${
-          theme === 2 ? "theme-visible" : "theme-hidden"
-        }`}
-      ></div>
+    <div className={`app-container`}>
       {/* Absolutes */}
       <Switcher
         theme={theme}
@@ -186,49 +162,26 @@ const App = () => {
           {theme === 2 ? <MagicText /> : "finnGPT"}
         </h1>
       </div>
-      {/* Normal (note: w-0 h-0 to prevent the content area from going below the textbox on space and magic*/}
+      <Content
+        content={mode === 0 ? conv : completions}
+        theme={theme}
+        mode={mode}
+      />
+      <ChatBox onButton={onButton} isLoading={isLoading} theme={theme} />
+      {/* Space Background */}
+      <StarsBackground currentTheme={theme} />
+      {/* Magic Background */}
       <div
-        className={`${theme === 0 ? "theme-visible" : "theme-hidden w-0 h-0"}`}
-      >
-        <div className="content-area">
-          {mode === 0 ? (
-            <Messages content={conv} theme={theme} />
-          ) : (
-            renderCompletions(0)
-          )}
-        </div>
-      </div>
-      {/* Space */}
-      <Background currentTheme={theme} />
-      <div
-        className={`${theme === 1 ? "theme-visible" : "theme-hidden w-0 h-0"}`}
-      >
-        {mode === 0 ? (
-          <Messages content={conv} theme={theme} />
-        ) : (
-          <Textbox
-            text={mode === 0 ? conv : renderCompletions(theme)}
-            theme={theme}
-          />
-        )}
-        {/* <Textbox text={mode === 0 ? conv : renderCompletions(1)} theme={1} /> */}
-      </div>
-      {/* Magic */}
+        className={`app-container-magic theme-transition ${
+          theme === 2 ? "theme-visible" : "theme-hidden"
+        }`}
+      ></div>
       <div
         className={`${theme === 2 ? "theme-visible" : "theme-hidden w-0 h-0"}`}
       >
-        {mode === 0 ? (
-          <Messages content={conv} theme={theme} />
-        ) : (
-          <Textbox
-            text={mode === 0 ? conv : renderCompletions(theme)}
-            theme={theme}
-          />
-        )}
-        <FireflyEffect count={30} />
+        <FireflyEffect count={50} />
         <Fog />
       </div>
-      <ChatBox onButton={onButton} isLoading={isLoading} theme={theme} />
     </div>
   );
 };

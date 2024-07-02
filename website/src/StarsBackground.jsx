@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 
-const Background = ({ currentTheme }) => {
+const StarsBackground = ({ currentTheme }) => {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const [isBackgroundReady, setIsBackgroundReady] = useState(false);
@@ -126,8 +126,8 @@ const Background = ({ currentTheme }) => {
   );
 };
 
-Background.propTypes = {
+StarsBackground.propTypes = {
   currentTheme: PropTypes.number.isRequired,
 };
 
-export default Background;
+export default StarsBackground;

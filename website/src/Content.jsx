@@ -77,60 +77,42 @@ const ChatMessage = ({ type, content, index, theme }) => {
   );
 };
 
-const Messages = ({ content, theme = 0 }) => {
-  const messages = content
-    .split("<|")
-    .filter(Boolean)
-    .map((msg) => {
-      const [type, ...contentParts] = msg.split("|>");
-      return { type, content: contentParts.join("|>").trim() };
-    });
+const Context = ({ content, theme, mode }) => {
+  let messages = [];
+  if (mode === 0) {
+    messages = content
+      .split("<|")
+      .filter(Boolean)
+      .map((msg) => {
+        const [type, ...contentParts] = msg.split("|>");
+        return { type, content: contentParts.join("|>").trim() };
+      });
+  }
 
-  const containerStyles = () => {
-    if (theme === 1 || theme === 2) {
+  const getThemeStyles = () => {
+    if (theme === 2) {
       return {
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        width: "50vw",
-        minWidth: "300px",
-        height: "70vh",
-        overflow: "hidden",
-        zIndex: 10,
-      };
-    } else {
-      return {};
-    }
-  };
-
-  const innerStyles = () => {
-    if (theme === 1) {
-      return {
-        position: "absolute",
-        inset: 0,
-        margin: "1.5rem",
-        overflowY: "auto",
-      };
-    } else if (theme === 2) {
-      return {
-        position: "absolute",
-        inset: 0,
-        padding: "20px",
-        overflowY: "auto",
         background: "rgba(0, 0, 0, 0.2)",
         backdropFilter: "blur(8px)",
         borderRadius: "10px",
+        padding: "20px",
         boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
         border: "1px solid rgba(255, 255, 255, 0.3)",
       };
-    } else {
-      return {};
     }
+    return {};
   };
 
   return (
-    <div className="container mx-auto max-w-2xl p-4" style={containerStyles()}>
+    <div
+      className="z-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 overflow-hidden"
+      style={{
+        width: "50vw",
+        minWidth: "300px",
+        height: "70vh",
+        ...getThemeStyles(),
+      }}
+    >
       {theme === 1 && (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -141,10 +123,10 @@ const Messages = ({ content, theme = 0 }) => {
           <defs>
             <style>
               {`
-              .frame-border { fill: none; stroke: #149daf; stroke-width: 0.5; stroke-miterlimit: 10; }
-              .frame-accent { fill: #149daf; stroke-width: 0; }
-              .frame-glass { fill: #149daf; opacity: 0.2; }
-              `}
+                .frame-border { fill: none; stroke: #149daf; stroke-width: 0.5; stroke-miterlimit: 10; }
+                .frame-accent { fill: #149daf; stroke-width: 0; }
+                .frame-glass { fill: #149daf; opacity: 0.2; }
+                `}
             </style>
           </defs>
           <polygon
@@ -165,23 +147,54 @@ const Messages = ({ content, theme = 0 }) => {
         </svg>
       )}
       <div
-        className="relative overflow-auto scrollbar-hide"
-        style={innerStyles()}
+        className={`relative overflow-auto scrollbar-hide ${
+          theme === 1 ? "absolute inset-0 m-6" : ""
+        }`}
+        style={{
+          maxHeight: theme === 1 ? "calc(100% - 5rem)" : "100%",
+        }}
       >
-        <div className="space-y-4">
-          {messages.map((msg, index) => (
-            <ChatMessage
-              key={index}
-              type={msg.type}
-              content={msg.content}
-              index={index}
-              theme={theme}
-            />
-          ))}
+        <div
+          className={`text-center text-white}`}
+          style={{
+            fontSize: "22px",
+            lineHeight: "1.5",
+          }}
+        >
+          <div className="space-y-4">
+            {mode === 0
+              ? messages.map((msg, index) => (
+                  <ChatMessage
+                    key={index}
+                    type={msg.type}
+                    content={msg.content}
+                    index={index}
+                    theme={theme}
+                  />
+                ))
+              : content.map((item, index) => {
+                  return (
+                    <div key={index} className="text-wrapper">
+                      <p
+                        className={`text-gen ${
+                          item.type === "error" && "error"
+                        }`}
+                      >
+                        {item.content}
+                      </p>
+                      {index != content.length - 1 && (
+                        <div key={`separator-${index}`} className="separator">
+                          &nbsp;
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default Messages;
+export default Context;

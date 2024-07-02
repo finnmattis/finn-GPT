@@ -22,7 +22,7 @@ Firefly.propTypes = {
   y: PropTypes.number.isRequired,
 };
 
-const FireflyEffect = ({ count = 30 }) => {
+const FireflyEffect = ({ count }) => {
   const [fireflies, setFireflies] = useState([]);
 
   useEffect(() => {
