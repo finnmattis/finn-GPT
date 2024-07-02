@@ -73,7 +73,7 @@ def inference():
 
     text = request.args.get('context', default='', type=str)
     if not text:
-        return jsonify({"error": "The 'context' parameter is required and cannot be empty."}), 400
+        return jsonify({"error": "The 'context' parameter is required and cannot be empty."}), 1024
     
     def is_it_true(value):
         return value.lower() == 'true'

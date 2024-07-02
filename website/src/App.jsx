@@ -3,14 +3,14 @@ import ChatBox from "./ChatBox";
 import "./App.css";
 import Textbox from "./Textbox";
 import Background from "./Background";
-import ThemeSwitcher from "./ThemeSwitcher";
+import Switcher from "./Switcher";
 import MagicText from "./MagicText";
 import FireflyEffect from "./Firefly";
 import Fog from "./Fog";
 import Messages from "./Messages";
 
 const App = () => {
-  const [isChat, setIsChat] = useState(true);
+  const [mode, setMode] = useState(0);
   const [conv, setConv] = useState("");
   const [completions, setCompletions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,7 +19,7 @@ const App = () => {
 
   const fetchStream = async (input) => {
     setIsLoading(true);
-    if (isChat) {
+    if (mode === 0) {
       input = "<|user|>" + input + "<|assistant|>";
       setConv((prev) => prev + input);
     } else {
@@ -31,7 +31,7 @@ const App = () => {
     try {
       const url = new URL("http://127.0.0.1:5000/");
       url.searchParams.append("context", input);
-      url.searchParams.append("isChat", isChat);
+      url.searchParams.append("isChat", mode === 0);
 
       const response = await fetch(url.toString(), {
         signal: abortControllerRef.current.signal,
@@ -61,7 +61,7 @@ const App = () => {
             if (data === "[DONE]") {
               setIsLoading(false);
             } else if (data === "[ERROR]") {
-              if (isChat) {
+              if (mode === 0) {
                 setConv(
                   (prev) =>
                     (prev +=
@@ -84,7 +84,7 @@ const App = () => {
               } else {
                 filteredData = data.replace(/[^\x20-\x7E\u2013]/g, "");
               }
-              if (isChat) {
+              if (mode === 0) {
                 setConv((prev) => {
                   if (prev.endsWith("<|user|")) {
                     return prev.slice(0, -8);
@@ -113,7 +113,7 @@ const App = () => {
     } catch (err) {
       if (err.name !== "AbortError") {
         console.log(err);
-        if (isChat) {
+        if (mode === 0) {
           setConv(
             (prev) =>
               (prev +=
@@ -150,7 +150,6 @@ const App = () => {
 
   const renderCompletions = (theme_of_caller) => {
     if (theme_of_caller !== theme) return;
-    console.log("hi");
     return completions.map((item, index) => {
       return (
         <div key={index} className="text-wrapper">
@@ -175,7 +174,12 @@ const App = () => {
         }`}
       ></div>
       {/* Absolutes */}
-      <ThemeSwitcher theme={theme} setTheme={setTheme} />
+      <Switcher
+        theme={theme}
+        setTheme={setTheme}
+        mode={mode}
+        setMode={setMode}
+      />
       <div className="absolute top-0 w-full mt-5 z-10 flex justify-center">
         <h1 className={`app-title ${theme === 2 ? "app-title-magic" : ""}`}>
           {theme === 0 ? "Use" : theme === 1 ? "Explore" : "Uncover"}{" "}
@@ -187,18 +191,18 @@ const App = () => {
         className={`${theme === 0 ? "theme-visible" : "theme-hidden w-0 h-0"}`}
       >
         <div className="content-area">
-          <Messages content={conv} />
+          {mode === 0 ? <Messages content={conv} /> : renderCompletions(0)}
         </div>
       </div>
       {/* Space */}
       <Background currentTheme={theme} />
       <div className={`${theme === 1 ? "theme-visible" : "theme-hidden"}`}>
-        <Textbox text={isChat ? conv : renderCompletions(1)} theme={1} />
+        <Textbox text={mode === 0 ? conv : renderCompletions(1)} theme={1} />
       </div>
       {/* Magic */}
       <div className={`${theme === 2 ? "theme-visible" : "theme-hidden"}`}>
-        <Textbox text={isChat ? conv : renderCompletions(2)} theme={2} />
-        <FireflyEffect />
+        <Textbox text={mode === 0 ? conv : renderCompletions(2)} theme={2} />
+        <FireflyEffect count={30} />
         <Fog />
       </div>
       <ChatBox onButton={onButton} isLoading={isLoading} theme={theme} />
