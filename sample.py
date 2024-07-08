@@ -66,3 +66,5 @@ def get_response(model, text, isChat, max_length, temp, p, freq_pen):
             break
         if isChat and text.endswith("<|user|>"):
             break
+    if tokens.size(1) >= max_length:
+        yield "... Model can't generate any more. Maybe start a new chart?"

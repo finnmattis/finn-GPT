@@ -30,11 +30,11 @@ const App = () => {
     try {
       let url;
       if (mode === 0) {
-        url = new URL("https://chat-finn-gpt-enoprmj2xa-uc.a.run.app/");
+        url = new URL("http://127.0.0.1:5000/");
       } else {
         url = new URL("https://base-finn-gpt-enoprmj2xa-uc.a.run.app/");
       }
-      url.searchParams.append("context", input);
+      url.searchParams.append("context", conv + input);
 
       const response = await fetch(url.toString(), {
         signal: abortControllerRef.current.signal,

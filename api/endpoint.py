@@ -45,7 +45,7 @@ def inference():
         return jsonify({"error": "The 'context' parameter is required and cannot be empty."}), 400
     
     # Get optional parameters with default values
-    max_tokens = request.args.get('max_tokens', default=100, type=int)
+    max_tokens = request.args.get('max_tokens', default=1024, type=int)
     temperature = request.args.get('temperature', default=0.7, type=float)
     top_p = request.args.get('top_p', default=0.9, type=float)
     frequency_penalty = request.args.get('frequency_penalty', default=0.3, type=float)
@@ -59,6 +59,8 @@ def inference():
         return jsonify({"error": "top_p must be between 0 and 1"}), 400
     if frequency_penalty < 0:
         return jsonify({"error": "frequency_penalty must be non-negative"}), 400
+    
+    print(prompt)
     
     def generate_wrapper():
         try:
