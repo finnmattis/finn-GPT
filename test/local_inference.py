@@ -164,6 +164,9 @@ def get_response(text, isChat):
     xgen = tokens.to(device)
     token_counts = {}
 
+    buffer = []
+    num_errors = 0
+
     while xgen.size(1) < MAX_LENGTH:
         with torch.no_grad():
             logits, _ = model(xgen)
@@ -176,10 +179,21 @@ def get_response(text, isChat):
             latest_token = xcol.item()
             token_counts[latest_token] = token_counts.get(latest_token, 0) + 1
             
-            decoded_token = enc.decode([latest_token])
-            text += decoded_token
+            buffer.append(latest_token)
             
-            if not isChat and decoded_token == "<|endoftext|>":
+            decoded_token = enc.decode(buffer)
+            if "�" in decoded_token:
+                num_errors += 1
+                if num_errors > 4:
+                    raise ValueError("Model produced invalid unicode")
+            else:
+                num_errors = 0
+                text += decoded_token
+                sys.stdout.write(decoded_token)
+                sys.stdout.flush()
+                buffer.clear()
+            
+            if not isChat and "<|endoftext|>" in text:
                 break
 
             if isChat and text.endswith("<|user|>"):
@@ -189,8 +203,6 @@ def get_response(text, isChat):
                 sys.stdout.write('\b' * 8)
                 sys.stdout.flush()
                 break
-            sys.stdout.write(decoded_token)
-            sys.stdout.flush()
     return text
 
 if isChat:
