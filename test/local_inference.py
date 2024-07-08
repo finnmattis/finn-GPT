@@ -1,5 +1,4 @@
 import torch
-import tiktoken
 from torch.nn import functional as F
 import os
 

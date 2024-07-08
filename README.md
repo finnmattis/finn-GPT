@@ -77,3 +77,4 @@ finn-GPT, despite having the same number of parameters (124M) as OpenAI's GPT-2 
 Todo:
 get pretrain log - more stats - benchmark
 responsive website
+calculator/datetime use with <calc>, <day>, <time> tokens - another fine-tune (better special tokens this time)
