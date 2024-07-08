@@ -18,7 +18,5 @@ def get_tokenizer():
                 "<|assistant|>": 50259,
                 "<|calc|>": 50260,
                 "<|/calc|>": 50261,
-                "<|day|>": 50262,
-                "<|time|>": 50263,
             }
         )
