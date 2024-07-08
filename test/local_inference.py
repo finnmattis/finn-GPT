@@ -156,7 +156,7 @@ else:
         sys.stdout.write(prompt)
 
         # Print generation
-        for token in get_response(model, prompt, isChat):
+        for token in get_response(model, prompt, isChat, MAX_LENGTH, TEMPERATURE, P, FREQUENCY_PENALTY):
             sys.stdout.write(token)
             sys.stdout.flush()
         

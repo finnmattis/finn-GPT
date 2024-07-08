@@ -30,7 +30,7 @@ const App = () => {
     try {
       let url;
       if (mode === 0) {
-        url = new URL("http://127.0.0.1:5000/");
+        url = new URL("https://chat-finn-gpt-enoprmj2xa-uc.a.run.app/");
       } else {
         url = new URL("https://base-finn-gpt-enoprmj2xa-uc.a.run.app/");
       }

@@ -1,7 +1,6 @@
 import torch
 import tiktoken
 from torch.nn import functional as F
-from model import GPT
 
 enc = tiktoken.get_encoding("gpt2")
 
@@ -39,6 +38,8 @@ def get_response(model, text, isChat, max_length, temp, p, freq_pen):
     num_errors = 0
     token_counts = {}
 
+    user_token_stages = [enc.encode("<"), enc.encode("<|"), enc.encode("<|user"), enc.encode("<|user|")] # since user token is actually multiple, don't print early stages of it
+
     while tokens.size(1) < max_length:
         with torch.no_grad():
             logits, _ = model(tokens)
@@ -56,7 +57,7 @@ def get_response(model, text, isChat, max_length, temp, p, freq_pen):
             num_errors += 1
             if num_errors > 4:
                 raise ValueError("Model produced invalid unicode")
-        else:
+        elif buffer not in user_token_stages: # since user token is actually multiple, don't print early stages of it
             num_errors = 0
             text += decoded_token
             buffer.clear()

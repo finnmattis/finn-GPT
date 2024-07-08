@@ -75,7 +75,5 @@ cd website; sudo rm -r dist; npm run build; firebase deploy
 finn-GPT, despite having the same number of parameters (124M) as OpenAI's GPT-2 124M, outperforms it in various language tasks.
 
 Todo:
-Error when exceeding context with API
 get pretrain log - more stats - benchmark
-markdown in website
 responsive website
