@@ -6,12 +6,13 @@ COPY api/requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY api/chat_endpoint.py ./api/chat_endpoint.py
+COPY api/endpoint.py ./endpoint.py
 COPY ../model.py ./
+COPY ../sample.py ./
 COPY ../artifacts/chat_model_02000.pt ./artifacts/chat_model_02000.pt
 
 EXPOSE 8080
 
-WORKDIR /usr/src/app/api
+ENV isChat=1
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "chat_endpoint:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "endpoint:app"]

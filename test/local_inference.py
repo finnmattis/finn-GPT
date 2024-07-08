@@ -5,14 +5,13 @@ import os
 
 import sys; sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # give acess to parent dir
 from model import GPT
+from sample import get_response
 
 # Params:
 MAX_LENGTH = 1024
 TEMPERATURE = .7
 P = .9
 FREQUENCY_PENALTY = .3
-
-enc = tiktoken.get_encoding("gpt2")
 
 # Get device
 device = "cpu"
@@ -33,7 +32,7 @@ isChat = model_type == "chat"
 models = []
 
 # Get model_num
-filenames = os.listdir("../artifacts")
+filenames = os.listdir("artifacts")
 for filename in filenames:
     if filename.startswith(f"{model_type}_model_") and filename.endswith(".pt"):
         models.append(f"{filename[11:-3]}")
@@ -54,7 +53,7 @@ while True:
     print("Please enter a valid training step")
 
 # Get model from checkpoint
-checkpoint_path = f"../artifacts/{model_type}_model_{model_num}.pt"
+checkpoint_path = f"artifacts/{model_type}_model_{model_num}.pt"
 checkpoint = torch.load(checkpoint_path, map_location=torch.device(device))
 print(f"Validation loss: {checkpoint['val_loss']}")
 model = GPT(checkpoint["config"])
@@ -119,113 +118,46 @@ if answer == "y":
             print("Answer must be greater than or equal to 0 and less than or equal to 1.")
         except:
             print("Answer must be a number.")
-    
-
-def sample(logits, token_counts):
-    # Temperature
-    if TEMPERATURE == 0:
-        for token, count in token_counts.items():
-            logits[0][token] -= FREQUENCY_PENALTY * count
-        return torch.argmax(logits, dim=-1).unsqueeze(-1)
-    logits = logits / TEMPERATURE
-    
-    # Apply frequency penalty
-    for token, count in token_counts.items():
-        logits[0][token] -= FREQUENCY_PENALTY * count
-    
-    # Top-P sampling
-    sorted_logits, sorted_indices = torch.sort(logits, descending=True)
-    cumulative_probs = torch.cumsum(F.softmax(sorted_logits, dim=-1), dim=-1)
-    sorted_indices_to_remove = cumulative_probs > P
-    
-    sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
-    sorted_indices_to_remove[..., 0] = 0
-    
-    indices_to_remove = sorted_indices_to_remove.scatter(1, sorted_indices, sorted_indices_to_remove)
-    logits[indices_to_remove] = float('-inf')
-    
-    # Sample
-    probs = F.softmax(logits, dim=-1)
-    return torch.multinomial(probs, 1)
-
-def get_response(text, isChat):
-    os.system("clear")
-    if isChat:
-        printable = text.replace("<|user|>", "\n\nUser: ")
-        printable = printable.replace("<|assistant|>", "\n\nAssistant: ")
-        sys.stdout.write(printable[2:]) # The first user will have a \n before it
-    else:
-        sys.stdout.write(text)
-    sys.stdout.flush()
-
-    tokens = enc.encode(text)
-    tokens = torch.tensor(tokens, dtype=torch.long)
-    tokens = tokens.unsqueeze(0)
-    xgen = tokens.to(device)
-    token_counts = {}
-
-    buffer = []
-    num_errors = 0
-
-    while xgen.size(1) < MAX_LENGTH:
-        with torch.no_grad():
-            logits, _ = model(xgen)
-            logits = logits[:, -1, :]
-            
-            xcol = sample(logits, token_counts)
-            
-            xgen = torch.cat((xgen, xcol), dim=1)
-
-            latest_token = xcol.item()
-            token_counts[latest_token] = token_counts.get(latest_token, 0) + 1
-            
-            buffer.append(latest_token)
-            
-            decoded_token = enc.decode(buffer)
-            if "�" in decoded_token:
-                num_errors += 1
-                if num_errors > 4:
-                    raise ValueError("Model produced invalid unicode")
-            else:
-                num_errors = 0
-                text += decoded_token
-                sys.stdout.write(decoded_token)
-                sys.stdout.flush()
-                buffer.clear()
-            
-            if not isChat and "<|endoftext|>" in text:
-                break
-
-            if isChat and text.endswith("<|user|>"):
-                # get rid of <|user|>
-                sys.stdout.write('\b' * 8)
-                sys.stdout.write(' ' * 8)
-                sys.stdout.write('\b' * 8)
-                sys.stdout.flush()
-                break
-    return text
 
 if isChat:
     conv = "<|user|>"
-    print("Enter a prompt or type exit: ")
     while True:
+        print("Enter a prompt or type exit: ")
+        # Get prompt
         prompt = input()
         if prompt == "exit":
             break
         conv += f"{prompt}<|assistant|>"
-        conv = get_response(conv, isChat)
-        print("\n\n\nEnter a prompt or type exit: ")
+
+        # Print conv
+        os.system("clear")
+        printable = conv.replace("<|user|>", "\n\nUser: ")
+        printable = printable.replace("<|assistant|>", "\n\nAssistant: ")
+        sys.stdout.write(printable[2:]) # Get rid of \n before first "User:"
+
+        # Print generation
+        for token in get_response(model, conv, isChat, MAX_LENGTH, TEMPERATURE, P, FREQUENCY_PENALTY):
+            sys.stdout.write(token)
+            sys.stdout.flush()
+            conv += token
+
+        # Get rid of <|user|> and add newlines
+        sys.stdout.write('\b' * 8 + ' ' * 8 + '\b' * 8 + '\n' * 3)
 else:
     while True:
         print("Enter a prompt or type exit: ")
+        # Get prompt
         prompt = input()
         if prompt == "exit":
             break
-        get_response(prompt, isChat)
+
+        # Print prompt
+        os.system("clear")
+        sys.stdout.write(prompt)
+
+        # Print generation
+        for token in get_response(model, prompt, isChat):
+            sys.stdout.write(token)
+            sys.stdout.flush()
         
-        while True:
-            print("\n\nType \"continue\" to move on")
-            answer = input()
-            if answer == "continue":
-                os.system("clear")
-                break
+        print("\n\n\n")

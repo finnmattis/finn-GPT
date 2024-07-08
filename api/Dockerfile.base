@@ -6,12 +6,13 @@ COPY api/requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY api/base_endpoint.py ./api/base_endpoint.py
+COPY api/endpoint.py ./endpoint.py
 COPY ../model.py ./
+COPY ../sample.py ./
 COPY ../artifacts/base_model_70000.pt ./artifacts/base_model_70000.pt
 
 EXPOSE 8080
 
-WORKDIR /usr/src/app/api
+ENV isChat=0
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "base_endpoint:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "endpoint:app"]
