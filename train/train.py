@@ -11,8 +11,9 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 import sys; sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # give acess to parent dir
 from model import GPT, GPTConfig
 from data_loader import FineWebLoader, OasstLoader
+from tokenizer import get_tokenizer
 
-TRAIN_STAGE = "pretrain"
+TRAIN_STAGE = "finetune"
 assert TRAIN_STAGE in ["pretrain", "finetune"]
 
 ####################################################################################################
@@ -74,8 +75,6 @@ else:
     device = "cpu"
     if torch.cuda.is_available():
         device = "cuda"
-    elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
-        device = "mps"
     print(f"using device: {device}")
 
 device_type = "cuda" if device.startswith("cuda") else "cpu"
@@ -86,7 +85,7 @@ if torch.cuda.is_available():
 
 torch.set_float32_matmul_precision('high')
 
-enc = tiktoken.get_encoding("gpt2")
+enc = get_tokenizer()
 
 # create data loaders
 assert TOTAL_BATCH_SIZE % (MINI_BATCH_SIZE * BATCH_SEQ_LENGTH * ddp_world_size) == 0, "make sure total_batch_size is divisible by B * T * ddp_world_size"
@@ -107,8 +106,8 @@ if TRAIN_STAGE == "pretrain":
     model = GPT(GPTConfig(vocab_size=50304)) # "nice" number
 else:
     # from checkpoint
-    checkpoint_path = f"../artifacts/base_model_70000.pt"
-    checkpoint = torch.load(checkpoint_path)
+    checkpoint_path = f"artifacts/base_model_70000.pt"
+    checkpoint = torch.load(checkpoint_path, map_location=torch.device(device))
     print(f"Validation loss: {checkpoint['val_loss']}")
     model = GPT(checkpoint["config"])
     state_dict = checkpoint["model"]
@@ -145,7 +144,8 @@ def get_lr(it):
 # Eval val loss
 def eval_val_loss():
     model.eval()
-    val_loader.reset()
+    if TRAIN_STAGE == "pretrain":
+        val_loader.reset()
     with torch.no_grad():
         val_loss_accum = 0.0
         val_loss_steps = 20
@@ -184,8 +184,8 @@ for step in range(MAX_STEPS):
     last_step = (step == MAX_STEPS - 1)
 
     # once in a while evaluate our validation loss
-    if step % EVAL_INTERVAL == 0 or last_step:
-        eval_val_loss()
+    # if step % EVAL_INTERVAL == 0 or last_step:
+        # eval_val_loss()
 
     # optim step
     model.train()

@@ -5,6 +5,11 @@ import tiktoken
 from datasets import load_dataset
 from tqdm import tqdm
 
+import sys; sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # give acess to parent dir
+from tokenizer import get_tokenizer
+
+enc = get_tokenizer()
+
 # ------------------------------------------
 local_dir = "edu_fineweb10B"
 remote_name = "sample-10BT"
@@ -17,8 +22,7 @@ os.makedirs(DATA_CACHE_DIR, exist_ok=True)
 # download the dataset
 fw = load_dataset("HuggingFaceFW/fineweb-edu", name=remote_name, split="train")
 
-# init the tokenizer
-enc = tiktoken.get_encoding("gpt2")
+
 eot = enc._special_tokens['<|endoftext|>']
 def tokenize(doc):
     tokens = [eot]

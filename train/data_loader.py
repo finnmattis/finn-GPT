@@ -1,8 +1,12 @@
 import numpy as np
-import tiktoken
 import torch
 import random
 import os
+
+import sys; sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # give acess to parent dir
+from tokenizer import get_tokenizer
+
+enc = get_tokenizer()
 
 def load_tokens(filename):
     tokens = np.load(filename)
@@ -88,8 +92,8 @@ class OasstLoader:
                 y = y[:self.block_size]
 
             if len(x) < self.block_size:
-                x = np.pad(x, (0, self.block_size - len(x)), 'constant', constant_values=10310)
-                y = np.pad(y, (0, self.block_size - len(y)), 'constant', constant_values=10310)
+                x = np.pad(x, (0, self.block_size - len(x)), 'constant', constant_values=enc._special_tokens["<|pad|>"])
+                y = np.pad(y, (0, self.block_size - len(y)), 'constant', constant_values=enc._special_tokens["<|pad|>"])
             
             batch_x.append(x)
             batch_y.append(y)
@@ -103,11 +107,6 @@ class OasstLoader:
         return len(self.convs)
 
 if __name__ == "__main__":
-    loader = OasstLoader('train')
-    enc = tiktoken.get_encoding("gpt2")
-    import time
-    start = time.time()
-    while loader.epoch == 0:
-        x, y = loader.next_batch()
+    loader = OasstLoader('train', 1, 1024)
+    x, y = loader.next_batch()
     print(enc.decode(x[0].tolist()))
-    print(time.time() - start)

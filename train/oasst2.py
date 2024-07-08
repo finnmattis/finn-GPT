@@ -1,19 +1,22 @@
 from datasets import load_dataset
 from collections import defaultdict
 import numpy as np
-import tiktoken
 from tqdm import tqdm
 import re
+import os
 
-enc = tiktoken.get_encoding("gpt2")
-user = enc.encode('<|user|>')
-assistant = enc.encode('<|assistant|>')
+import sys; sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # give acess to parent dir
+from tokenizer import get_tokenizer
+
+enc = get_tokenizer()
+user = enc._special_tokens["<|user|>"]
+assistant = enc._special_tokens["<|assistant|>"]
 
 def tokenize(message):
     if message["role"] == "prompter":
-        tokens = user.copy()
+        tokens = [user]
     else:
-        tokens = assistant.copy()
+        tokens = [assistant]
     tokens.extend(enc.encode_ordinary(message["text"]))
     tokens_np = np.array(tokens)
     assert (0 <= tokens_np).all() and (tokens_np < 2**16).all(), "token dictionary too large for uint16"
