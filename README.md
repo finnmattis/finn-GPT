@@ -78,3 +78,8 @@ Todo:
 get pretrain log - more stats - benchmark
 responsive website
 calculator/datetime use with <calc>, <day>, <time> tokens - another fine-tune (better special tokens this time)
+
+rsync -av -e "ssh -i /Users/finnmattis/.ssh/finn.pem" \
+  --progress \
+  /Users/finnmattis/Desktop/finn-gpt/artifacts/model_70000.pt \
+  ubuntu@129.159.46.166:finn-GPT/artifacts/model_00000.pt

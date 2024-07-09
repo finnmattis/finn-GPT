@@ -41,11 +41,10 @@ else:
     MAX_LR = 3e-5 # Much slower learning rate for small adjustments
     MIN_LR = MAX_LR * 0.1
     WARMUP_STEPS = 50
-    MAX_STEPS = 2000 # ~ 5 epochs
+    MAX_STEPS = 100000
 
 # Eval
-EVAL_INTERVAL = 250
-CHECKPOINT_INTERVAL = 500
+EVAL_INTERVAL = 500
 
 SEED = 6+9+14+14 # FINN
 
@@ -123,7 +122,7 @@ if ddp:
 raw_model = model.module if ddp else model # always contains the "raw" unwrapped model
 
 # setup logging
-log_dir = "log"
+log_dir = "artifacts"
 os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, f"log.txt")
 with open(log_file, "w") as f: # open for writing to clear the file
@@ -162,16 +161,20 @@ def eval_val_loss():
         print(f"validation loss: {val_loss_accum.item():.4f}")
         with open(log_file, "a") as f:
             f.write(f"{step} val {val_loss_accum.item():.4f}\n")
-        if (step % CHECKPOINT_INTERVAL == 0 or last_step):
-            print("checkpoint time!!!")
-            checkpoint_path = os.path.join(log_dir, f"model_{step:05d}.pt")
-            checkpoint = {
-                'model': raw_model.state_dict(),
-                'config': raw_model.config,
-                'step': step,
-                'val_loss': val_loss_accum.item()
-            }
-            torch.save(checkpoint, checkpoint_path)
+        print("checkpoint time!!!")
+        if TRAIN_STAGE == "pretrain":
+            prefix = "base"
+        else:
+            prefix = "chat"
+
+        checkpoint_path = os.path.join(log_dir, f"{prefix}_model_{step:05d}.pt")
+        checkpoint = {
+            'model': raw_model.state_dict(),
+            'config': raw_model.config,
+            'step': step,
+            'val_loss': val_loss_accum.item()
+        }
+        torch.save(checkpoint, checkpoint_path)
 
 ####################################################################################################
 #                                        Train                                                     #
@@ -184,8 +187,8 @@ for step in range(MAX_STEPS):
     last_step = (step == MAX_STEPS - 1)
 
     # once in a while evaluate our validation loss
-    # if step % EVAL_INTERVAL == 0 or last_step:
-        # eval_val_loss()
+    if (step != 0 and step % EVAL_INTERVAL == 0) or last_step:
+        eval_val_loss()
 
     # optim step
     model.train()

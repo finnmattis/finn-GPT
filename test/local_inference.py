@@ -119,14 +119,14 @@ if answer == "y":
             print("Answer must be a number.")
 
 if isChat:
-    conv = "<|user|>"
+    conv = ""
     while True:
         print("Enter a prompt or type exit: ")
         # Get prompt
         prompt = input()
         if prompt == "exit":
             break
-        conv += f"{prompt}<|assistant|>"
+        conv += f"<|user|>{prompt}<|assistant|>"
 
         # Print conv
         os.system("clear")
@@ -139,9 +139,7 @@ if isChat:
             sys.stdout.write(token)
             sys.stdout.flush()
             conv += token
-
-        # Get rid of <|user|> and add newlines
-        sys.stdout.write('\b' * 8 + ' ' * 8 + '\b' * 8 + '\n' * 3)
+        print("\n\n")
 else:
     while True:
         print("Enter a prompt or type exit: ")

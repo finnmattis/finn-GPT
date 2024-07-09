@@ -56,7 +56,6 @@ class PreTrainLoader:
 class FineTuneLoader:
     def __init__(self, split, batch_size, block_size):
         assert split in {'train', 'val'}
-        assert batch_size % 2 == 0
         self.split = split
         self.batch_size = batch_size
         self.block_size = block_size
@@ -75,8 +74,11 @@ class FineTuneLoader:
     def next_batch(self):
         batch_x = []
         batch_y = []
+        
+        num_mathqa = round(self.batch_size * 0.5)
+        num_oasst = self.batch_size - num_mathqa
         # oast
-        for _ in range(self.batch_size//2):
+        for _ in range(num_oasst):
             if self.oasst_idx >= len(self.oasst):
                 self.oasst_epoch += 1
                 self.oasst_idx = 0
@@ -86,6 +88,7 @@ class FineTuneLoader:
             for message_group in self.oasst[self.oasst_idx]:
                 chosen = message_group[random.randint(0, len(message_group) - 1)]
                 conv.extend(chosen)
+            conv.append(50258) # append final user tok
             conv = np.array(conv)      
       
             x = conv[:-1]
@@ -104,7 +107,7 @@ class FineTuneLoader:
             self.oasst_idx += 1
         
         # Mathqa
-        for _ in range(self.batch_size//2):
+        for _ in range(num_mathqa):
             if self.mathqa_idx >= len(self.mathqa):
                 self.mathqa_epoch += 1
                 self.mathqa_idx = 0
@@ -112,7 +115,9 @@ class FineTuneLoader:
             
             conv = []
             for message_group in self.mathqa[self.mathqa_idx]:
-                conv.extend(message_group[0])
+                chosen = message_group[0]
+                conv.extend(chosen)
+            conv.append(50258) # append final user tok
             conv = np.array(conv)
       
             x = conv[:-1]
@@ -138,6 +143,6 @@ class FineTuneLoader:
         return len(self.oasst)
 
 if __name__ == "__main__":
-    loader = FineTuneLoader('train', 2, 1024)
+    loader = FineTuneLoader('train', 8, 1024)
     x, y = loader.next_batch()
-    print(enc.decode(x[1].tolist()))
+    print(enc.decode(y[7].tolist()))

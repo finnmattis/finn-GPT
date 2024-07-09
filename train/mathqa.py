@@ -55,7 +55,7 @@ def format_word_problems(problems, split):
             continue
         # Make conversation
         user = enc.encode(f"<|user|>{question}", allowed_special={'<|user|>'})
-        assistant = enc.encode(f"<|assistant|>The answer is <calc>{formula}</calc>", allowed_special={'<|assistant|>'})
+        assistant = enc.encode(f"<|assistant|>The answer is <|calc|>{formula}<|/calc|>", allowed_special={'<|assistant|>', "<|calc|>", "<|/calc|>"})
         formatted.append([[user], [assistant]])
     return formatted
 
@@ -100,6 +100,7 @@ train_word = format_word_problems(train_word, "train")
 print(f"Num train processed: {len(train_word)}")
 
 train_nonword = get_nonword_problems(NUM_NONWORD, "train")
+train_nonword = train_nonword * int(len(train_word)/len(train_nonword)*.25) # super hacky shit
 print(f"Num numword: {len(train_nonword)}")
 
 train_problems = train_word + train_nonword
@@ -114,6 +115,7 @@ val_word = format_word_problems(val_word, "val")
 print(f"Num val processed: {len(val_word)}")
 
 val_nonward = get_nonword_problems(NUM_NONWORD//10, "val")
+val_nonward = val_nonward * int(len(val_word)/len(val_nonward)*.25) # super hacky shit
 print(f"Num nonwordd: {len(val_nonward)}")
 
 val_problems = val_word + val_nonward
