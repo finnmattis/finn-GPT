@@ -10,7 +10,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 
 import sys; sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # give acess to parent dir
 from model import GPT, GPTConfig
-from data_loader import FineWebLoader, OasstLoader
+from data_loader import PreTrainLoader, FineTuneLoader
 from tokenizer import get_tokenizer
 
 TRAIN_STAGE = "finetune"
@@ -95,11 +95,11 @@ if master_process:
     print(f"=> calculated gradient accumulation steps: {grad_accum_steps}")
 
 if TRAIN_STAGE == "pretrain":
-    train_loader = FineWebLoader(split="train", batch_size=MINI_BATCH_SIZE, block_size=BATCH_SEQ_LENGTH, process_rank=ddp_rank, num_processes=ddp_world_size)
-    val_loader = FineWebLoader(split="val", batch_size=MINI_BATCH_SIZE, block_size=BATCH_SEQ_LENGTH, process_rank=ddp_rank, num_processes=ddp_world_size)
+    train_loader = PreTrainLoader(split="train", batch_size=MINI_BATCH_SIZE, block_size=BATCH_SEQ_LENGTH, process_rank=ddp_rank, num_processes=ddp_world_size)
+    val_loader = PreTrainLoader(split="val", batch_size=MINI_BATCH_SIZE, block_size=BATCH_SEQ_LENGTH, process_rank=ddp_rank, num_processes=ddp_world_size)
 
-train_loader = OasstLoader(split="train", batch_size=MINI_BATCH_SIZE, block_size=BATCH_SEQ_LENGTH)
-val_loader = OasstLoader(split="val", batch_size=MINI_BATCH_SIZE, block_size=BATCH_SEQ_LENGTH)
+train_loader = FineTuneLoader(split="train", batch_size=MINI_BATCH_SIZE, block_size=BATCH_SEQ_LENGTH)
+val_loader = FineTuneLoader(split="val", batch_size=MINI_BATCH_SIZE, block_size=BATCH_SEQ_LENGTH)
 
 if TRAIN_STAGE == "pretrain":
     # from scratch

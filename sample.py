@@ -1,9 +1,6 @@
 import torch
-import tiktoken
 from torch.nn import functional as F
-import os
 
-import sys; sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # give acess to parent dir
 from tokenizer import get_tokenizer
 
 enc = get_tokenizer()

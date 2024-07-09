@@ -13,7 +13,7 @@ def load_tokens(filename):
     tokens = tokens.astype(np.int32)
     return torch.tensor(tokens, dtype=torch.long)
 
-class FineWebLoader:
+class PreTrainLoader:
     def __init__(self, split, batch_size, block_size, process_rank, num_processes):
         assert split in {'train', 'val'}
         self.batch_size = batch_size
@@ -53,33 +53,37 @@ class FineWebLoader:
             self.current_position = B * T * self.process_rank
         return x, y
 
-class OasstLoader:
+class FineTuneLoader:
     def __init__(self, split, batch_size, block_size):
         assert split in {'train', 'val'}
+        assert batch_size % 2 == 0
         self.split = split
         self.batch_size = batch_size
         self.block_size = block_size
         
-        self.convs = np.load(f"oasst2_{split}.npy", allow_pickle=True)
+        self.oasst = np.load(f"oasst2_{split}.npy", allow_pickle=True)
+        self.mathqa = np.load(f"mathqa_{split}.npy", allow_pickle=True)
         
-        self.idx = 0
-        self.epoch = 0
-        self.shuffle()
+        self.oasst_idx = 0
+        self.oasst_epoch = 0
+        self.mathqa_idx = 0
+        self.mathqa_epoch = 0
 
-    def shuffle(self):
-        np.random.shuffle(self.convs)
+        np.random.shuffle(self.oasst)
+        np.random.shuffle(self.mathqa)
 
     def next_batch(self):
         batch_x = []
         batch_y = []
-        for _ in range(self.batch_size):
-            if self.idx >= len(self.convs):
-                self.epoch += 1
-                self.idx = 0
-                self.shuffle()
+        # oast
+        for _ in range(self.batch_size//2):
+            if self.oasst_idx >= len(self.oasst):
+                self.oasst_epoch += 1
+                self.oasst_idx = 0
+                np.random.shuffle(self.oasst)
             
             conv = []
-            for message_group in self.convs[self.idx]:
+            for message_group in self.oasst[self.oasst_idx]:
                 chosen = message_group[random.randint(0, len(message_group) - 1)]
                 conv.extend(chosen)
             conv = np.array(conv)      
@@ -97,16 +101,43 @@ class OasstLoader:
             
             batch_x.append(x)
             batch_y.append(y)
-            self.idx += 1
+            self.oasst_idx += 1
+        
+        # Mathqa
+        for _ in range(self.batch_size//2):
+            if self.mathqa_idx >= len(self.mathqa):
+                self.mathqa_epoch += 1
+                self.mathqa_idx = 0
+                np.random.shuffle(self.mathqa)
+            
+            conv = []
+            for message_group in self.mathqa[self.mathqa_idx]:
+                conv.extend(message_group[0])
+            conv = np.array(conv)
+      
+            x = conv[:-1]
+            y = conv[1:]
+            
+            if len(x) > self.block_size:
+                x = x[:self.block_size]
+                y = y[:self.block_size]
+
+            if len(x) < self.block_size:
+                x = np.pad(x, (0, self.block_size - len(x)), 'constant', constant_values=enc._special_tokens["<|pad|>"])
+                y = np.pad(y, (0, self.block_size - len(y)), 'constant', constant_values=enc._special_tokens["<|pad|>"])
+            
+            batch_x.append(x)
+            batch_y.append(y)
+            self.mathqa_idx += 1
 
         x, y = np.array(batch_x, dtype=np.int64), np.array(batch_y, dtype=np.int64)
         x, y = torch.tensor(x, dtype=torch.long), torch.tensor(y, dtype=torch.long)
         return x, y
 
     def __len__(self):
-        return len(self.convs)
+        return len(self.oasst)
 
 if __name__ == "__main__":
-    loader = OasstLoader('train', 1, 1024)
+    loader = FineTuneLoader('train', 2, 1024)
     x, y = loader.next_batch()
-    print(enc.decode(x[0].tolist()))
+    print(enc.decode(x[1].tolist()))
