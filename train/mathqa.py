@@ -93,7 +93,7 @@ def get_nonword_problems(num, split):
 
 
 # Train
-with open("train.json", "r") as file:
+with open("train/data/raw_mathqa_train.json", "r") as file:
     train_word = json.load(file)
 print(f"Num train word problems: {len(train_word)}")
 train_word = format_word_problems(train_word, "train")
@@ -107,7 +107,7 @@ train_problems = np.array(train_problems, dtype=object)
 np.random.shuffle(train_problems)
 
 # Val
-with open("val.json", "r") as file:
+with open("train/data/raw_mathqa_val.json", "r") as file:
     val_word = json.load(file)
 print(f"Num val word problems: {len(val_word)}")
 val_word = format_word_problems(val_word, "val")
@@ -120,5 +120,5 @@ val_problems = val_word + val_nonward
 val_problems = np.array(val_problems, dtype=object)
 np.random.shuffle(val_problems)
 
-np.save("mathqa_train.npy", train_problems)
-np.save("mathqa_val.npy", val_problems)
+np.save("train/data/mathqa_train.npy", train_problems)
+np.save("train/data/mathqa_val.npy", val_problems)

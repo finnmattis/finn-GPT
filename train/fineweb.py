@@ -11,7 +11,7 @@ from tokenizer import get_tokenizer
 enc = get_tokenizer()
 
 # ------------------------------------------
-local_dir = "edu_fineweb10B"
+local_dir = "data/edu_fineweb10B"
 remote_name = "sample-10BT"
 shard_size = int(1e8) # 100M tokens per shard, total of 100 shards
 

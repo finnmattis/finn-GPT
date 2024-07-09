@@ -22,7 +22,7 @@ class PreTrainLoader:
         self.num_processes = num_processes
 
         # get the shard filenames
-        data_root = "edu_fineweb10B"
+        data_root = "train/data/edu_fineweb10B"
         shards = os.listdir(data_root)
         shards = [s for s in shards if split in s]
         shards = sorted(shards)
@@ -61,8 +61,8 @@ class FineTuneLoader:
         self.batch_size = batch_size
         self.block_size = block_size
         
-        self.oasst = np.load(f"oasst2_{split}.npy", allow_pickle=True)
-        self.mathqa = np.load(f"mathqa_{split}.npy", allow_pickle=True)
+        self.oasst = np.load(f"train/data/oasst2_{split}.npy", allow_pickle=True)
+        self.mathqa = np.load(f"train/data/mathqa_{split}.npy", allow_pickle=True)
         
         self.oasst_idx = 0
         self.oasst_epoch = 0

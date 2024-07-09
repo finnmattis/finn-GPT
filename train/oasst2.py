@@ -56,13 +56,13 @@ print("Starting preprocessing...")
 
 # Process train data
 train_data = preprocess_open_assistant_data('train')
-train_output_file = 'oasst2_train.npy'
+train_output_file = 'train/data/oasst2_train.npy'
 np.save(train_output_file, train_data)
 print(f"Train data has been saved to {train_output_file}")
 
 # Process validation data
 val_data = preprocess_open_assistant_data('validation')
-val_output_file = 'oasst2_val.npy'
+val_output_file = 'train/data/oasst2_val.npy'
 np.save(val_output_file, val_data)
 print(f"Validation data has been saved to {val_output_file}")
 
