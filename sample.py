@@ -1,7 +1,10 @@
 import torch
 from torch.nn import functional as F
+import re
 
 from tokenizer import get_tokenizer
+
+torch.manual_seed(42)
 
 enc = get_tokenizer()
 
@@ -33,13 +36,18 @@ def sample(logits, token_counts, temp, p, freq_pen):
     return torch.multinomial(probs, 1)
 
 def get_response(model, text, isChat, max_length, temp, p, freq_pen):
-    tokens = torch.tensor(enc.encode(text), dtype=torch.long).unsqueeze(0).to(next(model.parameters()).device) # use same device as model
+    tokens = enc.encode(text, allowed_special={"<|user|>", "<|assistant|>", "<|calc|>", "<|/calc|>"})
+    tokens = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(next(model.parameters()).device) # use same device as model
+
+    user_token = enc._special_tokens["<|user|>"]
+    calc_start = enc._special_tokens["<|calc|>"]
+    calc_end = enc._special_tokens["<|/calc|>"]
+
+    calculating = False
 
     buffer = []
     num_errors = 0
     token_counts = {}
-
-    user_token_stages = [enc.encode("<"), enc.encode("<|"), enc.encode("<|user"), enc.encode("<|user|")] # since user token is actually multiple, don't print early stages of it
 
     while tokens.size(1) < max_length:
         with torch.no_grad():
@@ -52,21 +60,32 @@ def get_response(model, text, isChat, max_length, temp, p, freq_pen):
 
         token_counts[latest_token] = token_counts.get(latest_token, 0) + 1
         buffer.append(latest_token)
+
+        if latest_token == user_token:
+            break
+
+        if latest_token == calc_start:
+            calculating = True
+
+        elif latest_token == calc_end:
+            idx = tokens.shape[0] - 1
+            expr = []
+            while tokens[0][idx] != calc_start:
+                expr.append(tokens[0][idx].item())
+                idx -= 1
+            expr.reverse()
+            expr = enc.decode(expr[:-2])
+            yield f"{eval(expr)} {expr}"
         
-        decoded_token = enc.decode(buffer)
-        if "�" in decoded_token:
+        decoded_codepoint = enc.decode(buffer)
+        if "�" in decoded_codepoint:
             num_errors += 1
             if num_errors > 4:
                 raise ValueError("Model produced invalid unicode")
-        elif buffer not in user_token_stages: # since user token is actually multiple, don't print early stages of it
+        elif not calculating:
             num_errors = 0
-            text += decoded_token
             buffer.clear()
-            yield decoded_token
+            yield decoded_codepoint
         
-        if not isChat and "<|endoftext|>" in text:
-            break
-        if isChat and text.endswith("<|user|>"):
-            break
     if tokens.size(1) >= max_length:
         yield "... Model can't generate any more. Maybe start a new chart?"

@@ -81,5 +81,4 @@ calculator/datetime use with <calc>, <day>, <time> tokens - another fine-tune (b
 
 rsync -av -e "ssh -i /Users/finnmattis/.ssh/finn.pem" \
   --progress \
-  /Users/finnmattis/Desktop/finn-gpt/artifacts/model_70000.pt \
-  ubuntu@129.159.46.166:finn-GPT/artifacts/model_00000.pt
+  ubuntu@129.159.46.166:/home/ubuntu/finn-GPT/artifacts/chat_model_01999.pt /Users/finnmattis/Desktop/finn-gpt/artifacts/chat_model_2000.pt
