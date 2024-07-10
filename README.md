@@ -73,13 +73,3 @@ cd website; sudo rm -r dist; npm run build; firebase deploy
 ## Performance
 
 finn-GPT, despite having the same number of parameters (124M) as OpenAI's GPT-2 124M, outperforms it in various language tasks.
-
-later:
-
-responsive website
-benchmarks
-
-
-rsync -av -e "ssh -i /Users/finnmattis/.ssh/finn.pem" \
-  --progress \
-  ubuntu@129.159.46.166:/home/ubuntu/finn-GPT/artifacts/chat_model_01999.pt /Users/finnmattis/Desktop/finn-gpt/artifacts/chat_model_2000.pt
