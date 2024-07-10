@@ -16,7 +16,5 @@ def get_tokenizer():
                 "<|pad|>": 50257,
                 "<|user|>": 50258,
                 "<|assistant|>": 50259,
-                "<|calc|>": 50260,
-                "<|/calc|>": 50261,
             }
         )

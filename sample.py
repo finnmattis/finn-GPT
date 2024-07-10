@@ -36,14 +36,10 @@ def sample(logits, token_counts, temp, p, freq_pen):
     return torch.multinomial(probs, 1)
 
 def get_response(model, text, isChat, max_length, temp, p, freq_pen):
-    tokens = enc.encode(text, allowed_special={"<|user|>", "<|assistant|>", "<|calc|>", "<|/calc|>"})
+    tokens = enc.encode(text, allowed_special={"<|user|>", "<|assistant|>"})
     tokens = torch.tensor(tokens, dtype=torch.long).unsqueeze(0).to(next(model.parameters()).device) # use same device as model
 
     user_token = enc._special_tokens["<|user|>"]
-    calc_start = enc._special_tokens["<|calc|>"]
-    calc_end = enc._special_tokens["<|/calc|>"]
-
-    calculating = False
 
     buffer = []
     num_errors = 0
@@ -63,26 +59,13 @@ def get_response(model, text, isChat, max_length, temp, p, freq_pen):
 
         if latest_token == user_token:
             break
-
-        if latest_token == calc_start:
-            calculating = True
-
-        elif latest_token == calc_end:
-            idx = tokens.shape[0] - 1
-            expr = []
-            while tokens[0][idx] != calc_start:
-                expr.append(tokens[0][idx].item())
-                idx -= 1
-            expr.reverse()
-            expr = enc.decode(expr[:-2])
-            yield f"{eval(expr)} {expr}"
         
         decoded_codepoint = enc.decode(buffer)
         if "�" in decoded_codepoint:
             num_errors += 1
             if num_errors > 4:
                 raise ValueError("Model produced invalid unicode")
-        elif not calculating:
+        else:
             num_errors = 0
             buffer.clear()
             yield decoded_codepoint

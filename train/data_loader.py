@@ -63,13 +63,10 @@ class FineTuneLoader:
         self.oasst = np.load(f"train/data/oasst2_{split}.npy", allow_pickle=True)
         self.mathqa = np.load(f"train/data/mathqa_{split}.npy", allow_pickle=True)
         
-        self.oasst_idx = 0
-        self.oasst_epoch = 0
-        self.mathqa_idx = 0
-        self.mathqa_epoch = 0
+        self.idx = 0
+        self.epoch = 0
 
         np.random.shuffle(self.oasst)
-        np.random.shuffle(self.mathqa)
 
     def next_batch(self):
         batch_x = []
@@ -79,13 +76,13 @@ class FineTuneLoader:
         num_oasst = self.batch_size - num_mathqa
         # oast
         for _ in range(num_oasst):
-            if self.oasst_idx >= len(self.oasst):
-                self.oasst_epoch += 1
-                self.oasst_idx = 0
+            if self.idx >= len(self.oasst):
+                self.epoch += 1
+                self.idx = 0
                 np.random.shuffle(self.oasst)
             
             conv = []
-            for message_group in self.oasst[self.oasst_idx]:
+            for message_group in self.oasst[self.idx]:
                 chosen = message_group[random.randint(0, len(message_group) - 1)]
                 conv.extend(chosen)
             conv.append(50258) # append final user tok
@@ -104,37 +101,8 @@ class FineTuneLoader:
             
             batch_x.append(x)
             batch_y.append(y)
-            self.oasst_idx += 1
+            self.idx += 1
         
-        # Mathqa
-        for _ in range(num_mathqa):
-            if self.mathqa_idx >= len(self.mathqa):
-                self.mathqa_epoch += 1
-                self.mathqa_idx = 0
-                np.random.shuffle(self.mathqa)
-            
-            conv = []
-            for message_group in self.mathqa[self.mathqa_idx]:
-                chosen = message_group[0]
-                conv.extend(chosen)
-            conv.append(50258) # append final user tok
-            conv = np.array(conv)
-      
-            x = conv[:-1]
-            y = conv[1:]
-            
-            if len(x) > self.block_size:
-                x = x[:self.block_size]
-                y = y[:self.block_size]
-
-            if len(x) < self.block_size:
-                x = np.pad(x, (0, self.block_size - len(x)), 'constant', constant_values=enc._special_tokens["<|pad|>"])
-                y = np.pad(y, (0, self.block_size - len(y)), 'constant', constant_values=enc._special_tokens["<|pad|>"])
-            
-            batch_x.append(x)
-            batch_y.append(y)
-            self.mathqa_idx += 1
-
         x, y = np.array(batch_x, dtype=np.int64), np.array(batch_y, dtype=np.int64)
         x, y = torch.tensor(x, dtype=torch.long), torch.tensor(y, dtype=torch.long)
         return x, y

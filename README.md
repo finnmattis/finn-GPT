@@ -74,10 +74,11 @@ cd website; sudo rm -r dist; npm run build; firebase deploy
 
 finn-GPT, despite having the same number of parameters (124M) as OpenAI's GPT-2 124M, outperforms it in various language tasks.
 
-Todo:
-get pretrain log - more stats - benchmark
+later:
+
 responsive website
-calculator/datetime use with <calc>, <day>, <time> tokens - another fine-tune (better special tokens this time)
+benchmarks
+
 
 rsync -av -e "ssh -i /Users/finnmattis/.ssh/finn.pem" \
   --progress \
