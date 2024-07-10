@@ -44,7 +44,7 @@ else:
     MAX_STEPS = 100000
 
 # Eval
-EVAL_INTERVAL = 500
+EVAL_INTERVAL = 250
 
 SEED = 6+9+14+14 # FINN
 
@@ -224,7 +224,7 @@ for step in range(MAX_STEPS):
     tokens_processed = MINI_BATCH_SIZE * BATCH_SEQ_LENGTH * grad_accum_steps * ddp_world_size
     tokens_per_sec = tokens_processed / dt
     if master_process:
-        print(f"step {step:5d} | loss: {loss_accum.item():.6f} | lr {lr:.4e} | norm: {norm:.4f} | dt: {dt*1000:.2f}ms | tok/sec: {tokens_per_sec:.2f}")
+        print(f"epoch {train_loader.epoch} | step {step:5d} | loss: {loss_accum.item():.6f} | lr {lr:.4e} | norm: {norm:.4f} | dt: {dt*1000:.2f}ms | tok/sec: {tokens_per_sec:.2f}")
         with open(log_file, "a") as f:
             f.write(f"{step} train {loss_accum.item():.6f}\n")
 
