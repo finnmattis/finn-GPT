@@ -60,13 +60,12 @@ class FineTuneLoader:
         self.batch_size = batch_size
         self.block_size = block_size
         
-        self.oasst = np.load(f"train/data/oasst2_{split}.npy", allow_pickle=True)
-        self.mathqa = np.load(f"train/data/mathqa_{split}.npy", allow_pickle=True)
+        self.convs = np.load(f"train/data/oasst2_{split}.npy", allow_pickle=True)
         
         self.idx = 0
         self.epoch = 0
 
-        np.random.shuffle(self.oasst)
+        np.random.shuffle(self.convs)
 
     def next_batch(self):
         batch_x = []
@@ -76,13 +75,13 @@ class FineTuneLoader:
         num_oasst = self.batch_size - num_mathqa
         # oast
         for _ in range(num_oasst):
-            if self.idx >= len(self.oasst):
+            if self.idx >= len(self.convs):
                 self.epoch += 1
                 self.idx = 0
-                np.random.shuffle(self.oasst)
+                np.random.shuffle(self.convs)
             
             conv = []
-            for message_group in self.oasst[self.idx]:
+            for message_group in self.convs[self.idx]:
                 chosen = message_group[random.randint(0, len(message_group) - 1)]
                 conv.extend(chosen)
             conv.append(50258) # append final user tok
@@ -108,7 +107,7 @@ class FineTuneLoader:
         return x, y
 
     def __len__(self):
-        return len(self.oasst)
+        return len(self.convs)
 
 if __name__ == "__main__":
     loader = FineTuneLoader('train', 8, 1024)
